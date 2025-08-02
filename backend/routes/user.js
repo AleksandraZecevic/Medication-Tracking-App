@@ -9,6 +9,7 @@ const urlencodedParser = bodyParser.urlencoded({ extended: false });
 user.use(bodyParser.json());
 user.use(urlencodedParser);
 
+// get all users
 user.get('/', async (req, res) => {
   try {
     const users = await DB.getAllUsers();
@@ -18,6 +19,7 @@ user.get('/', async (req, res) => {
   }
 });
 
+// get user by id
 user.get('/:id', async (req, res) => {
   try {
     const result = await DB.getUserById(req.params.id);
@@ -28,6 +30,7 @@ user.get('/:id', async (req, res) => {
   }
 });
 
+// create user
 user.post('/', urlencodedParser ,async (req, res) => {
   try {
     const newUser = await DB.createUser(req.body);
@@ -37,6 +40,7 @@ user.post('/', urlencodedParser ,async (req, res) => {
   }
 });
 
+// update user by id
 user.put('/:id', async (req, res) => {
   try {
     const updated = await DB.updateUser(req.params.id, req.body);
@@ -46,6 +50,7 @@ user.put('/:id', async (req, res) => {
   }
 });
 
+// delete user
 user.delete('/:id', async (req, res) => {
   try {
     const result = await DB.deleteUser(req.params.id);

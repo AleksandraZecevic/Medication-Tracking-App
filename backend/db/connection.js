@@ -195,6 +195,29 @@ dataPool.getAllCaregivers = () => {
   });
 };
 
+dataPool.updateCaregiver = ({ user_id, certification, care_center_name }) => {
+  return new Promise((resolve, reject) => {
+    db.query(
+      'UPDATE Caregiver SET certification = ?, care_center_name = ? WHERE user_id = ?',
+      [certification, care_center_name, user_id],
+      (err, res) => {
+        if (err) return reject(err);
+        resolve({ user_id, certification, care_center_name });
+      }
+    );
+  });
+};
+
+dataPool.deleteCaregiver = (user_id) => {
+  return new Promise((resolve, reject) => {
+    db.query('DELETE FROM Caregiver WHERE user_id = ?', [user_id], (err, res) => {
+      if (err) return reject(err);
+      resolve({ message: 'Caregiver deleted successfully.', user_id });
+    });
+  });
+};
+
+
 // DONATION CENTER --------------------------------------------------------------------------------------------------
 // DONATION CENTER --------------------------------------------------------------------------------------------------
 
@@ -222,6 +245,30 @@ dataPool.getAllDonationCenters = () => {
   });
 };
 
+dataPool.updateDonationCenter = ({ user_id, center_name, address, verification_status }) => {
+  return new Promise((resolve, reject) => {
+    db.query(
+      'UPDATE `Donation Center` SET center_name = ?, address = ?, verification_status = ? WHERE user_id = ?',
+      [center_name, address, verification_status, user_id],
+      (err, res) => {
+        if (err) return reject(err);
+        resolve({ user_id, center_name, address, verification_status });
+      }
+    );
+  });
+};
+
+
+dataPool.deleteDonationCenter = (user_id) => {
+  return new Promise((resolve, reject) => {
+    db.query('DELETE FROM `Donation Center` WHERE user_id = ?', [user_id], (err, res) => {
+      if (err) return reject(err);
+      resolve({ message: 'Donation Center deleted successfully.', user_id });
+    });
+  });
+};
+
+
 // HEALTHCARE WORKER --------------------------------------------------------------------------------------------------
 // HEALTHCARE WORKER --------------------------------------------------------------------------------------------------
 
@@ -245,6 +292,129 @@ dataPool.getAllHealthCareWorkers = () => {
         return reject(err);
       }
       return resolve(res);
+    });
+  });
+};
+
+dataPool.updateHealthcareWorker = ({ user_id, licence_num, specialization, institution }) => {
+  return new Promise((resolve, reject) => {
+    db.query(
+      'UPDATE `HealthCare Worker` SET licence_num = ?, specialization = ?, institution = ? WHERE user_id = ?',
+      [licence_num, specialization, institution, user_id],
+      (err, res) => {
+        if (err) return reject(err);
+        resolve({ user_id, licence_num, specialization, institution });
+      }
+    );
+  });
+};
+
+// Delete HealthCare Worker by user_id
+dataPool.deleteHealthcareWorker = (user_id) => {
+  return new Promise((resolve, reject) => {
+    db.query('DELETE FROM `HealthCare Worker` WHERE user_id = ?', [user_id], (err, res) => {
+      if (err) return reject(err);
+      resolve({ message: 'HealthCare Worker deleted successfully.', user_id });
+    });
+  });
+};
+
+// MEDICATION ENTRY ------------------------------------------------------------------------------------------------------
+// MEDICATION ENTRY ------------------------------------------------------------------------------------------------------
+
+dataPool.allMediEntry = () => {
+  return new Promise((resolve, reject) => {
+    db.query('SELECT * FROM `Medication Entry`', (err, res) => {
+      if (err) {
+        return reject(err);
+      }
+      return resolve(res);
+    });
+  });
+};
+
+dataPool.createMedEntry = (medE) => {
+  const { entry_id, user_id, med_id, purchase_date, expiration_date, prescribed_by, donation_status } = medE;
+
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (![user_id, med_id, prescribed_by].every(id => Number.isInteger(Number(id)))) {
+        return reject(new Error("user_id, med_id, and prescribed_by must be valid integers"));
+      }
+
+      const checks = await Promise.all([
+        new Promise((res, rej) => db.query('SELECT user_id FROM User WHERE user_id = ?', [user_id], (e, r) => e ? rej(e) : res(r.length > 0))),
+        new Promise((res, rej) => db.query('SELECT med_id FROM Medication WHERE med_id = ?', [med_id], (e, r) => e ? rej(e) : res(r.length > 0))),
+        new Promise((res, rej) => db.query('SELECT user_id FROM `HealthCare Worker` WHERE user_id = ?', [prescribed_by], (e, r) => e ? rej(e) : res(r.length > 0)))
+      ]);
+
+      if (checks.includes(false)) {
+        return reject(new Error("One or more referenced IDs do not exist (user_id, med_id, prescribed_by)"));
+      }
+
+      db.query(
+        'INSERT INTO `Medication Entry` (entry_id, user_id, med_id, purchase_date, expiration_date, prescribed_by, donation_status) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [entry_id, user_id, med_id, purchase_date, expiration_date, prescribed_by, donation_status],
+        (err) => {
+          if (err) return reject(err);
+          resolve({ entry_id, user_id, med_id });
+        }
+      );
+    } catch (err) {
+      reject(err);
+    }
+  });
+};
+
+
+dataPool.getMediEntryById = (id) => {
+  return new Promise((resolve, reject) => {
+    db.query('SELECT * FROM `Medication Entry` WHERE entry_id = ?', [id], (err, res) => {
+      if (err) return reject(err);
+      resolve(res[0]);
+    });
+  });
+};
+
+dataPool.updateMedEntry = (entry_id, medE) => {
+  const { user_id, med_id, purchase_date, expiration_date, prescribed_by, donation_status } = medE;
+
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (![user_id, med_id, prescribed_by].every(id => Number.isInteger(Number(id)))) {
+        return reject(new Error("user_id, med_id, and prescribed_by must be valid integers"));
+      }
+
+      const checks = await Promise.all([
+        new Promise((res, rej) => db.query('SELECT user_id FROM User WHERE user_id = ?', [user_id], (e, r) => e ? rej(e) : res(r.length > 0))),
+        new Promise((res, rej) => db.query('SELECT med_id FROM Medication WHERE med_id = ?', [med_id], (e, r) => e ? rej(e) : res(r.length > 0))),
+        new Promise((res, rej) => db.query('SELECT user_id FROM `HealthCare Worker` WHERE user_id = ?', [prescribed_by], (e, r) => e ? rej(e) : res(r.length > 0)))
+      ]);
+
+      if (checks.includes(false)) {
+        return reject(new Error("One or more referenced IDs do not exist (user_id, med_id, prescribed_by)"));
+      }
+
+      db.query(
+        'UPDATE `Medication Entry` SET user_id = ?, med_id = ?, purchase_date = ?, expiration_date = ?, prescribed_by = ?, donation_status = ? WHERE entry_id = ?',
+        [user_id, med_id, purchase_date, expiration_date, prescribed_by, donation_status, entry_id],
+        (err, res) => {
+          if (err) return reject(err);
+          resolve(res);
+        }
+      );
+    } catch (err) {
+      reject(err);
+    }
+  });
+};
+
+
+dataPool.deleteMedication = (id) => {
+  return new Promise((resolve, reject) => {
+    db.query('DELETE FROM `Medication Entry` WHERE entry_id = ?', [id], (err, res) => {
+      if (err) return reject(err);
+      resolve(res);
     });
   });
 };

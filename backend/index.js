@@ -16,13 +16,14 @@ const userRoutes = require("./routes/user");
 const donationCenter = require("./routes/donationcenter");
 const caregiver = require("./routes/caregiver");
 const healthcareWorker = require("./routes/healthcareWorker");
-
+const medEntry = require("./routes/medicatonEntry.js");
 
 app.use('/medication', medication);
 app.use('/user', userRoutes);
 app.use('/donationcenter', donationCenter);
 app.use('/caregiver', caregiver);
 app.use('/healthcareWorker', healthcareWorker);
+app.use('/medentry', medEntry);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
