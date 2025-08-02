@@ -143,9 +143,13 @@ dataPool.getMedicationById = (id) => {
 };
 
 dataPool.updateMedication = (id, medication) => {
+  if (!medication || typeof medication !== "object") {
+    return Promise.reject(new Error("Invalid medication data"));
+  }
   const { name, type, intake_instruction } = medication;
+
   return new Promise((resolve, reject) => {
-    db.query(
+     db.query(
       'UPDATE Medication SET name = ?, type = ?, intake_instruction = ? WHERE med_id = ?',
       [name, type, intake_instruction, id],
       (err, res) => {

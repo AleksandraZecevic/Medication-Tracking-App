@@ -8,6 +8,7 @@ const urlencodedParser = bodyParser.urlencoded({ extended: false });
 // Middleware to parse both JSON and URL-encoded forms
 medication.use(bodyParser.json());
 medication.use(urlencodedParser);
+medication.use(express.json());
 
 // Get all medications
 medication.get("/", async (req, res) => {
@@ -55,38 +56,23 @@ medication.post("/", urlencodedParser, async (req, res) => {
     }
 });
 
-/*
-dataPool.createMedication = (medication) => {
-  const { med_id, name, type, intake_instruction } = medication;
+// Update medication
+medication.put("/:id", urlencodedParser, async (req, res) => {
+  try {
+    const { name, type, intake_instruction } = req.body;
 
-  return new Promise((resolve, reject) => {
-    // Check if med_id is provided and it's a valid integer
-    if (isNaN(med_id) || med_id <= 0) {
-      return reject(new Error("med_id must be a valid positive integer"));
+    if (!name || !type || !intake_instruction) {
+      return res.status(400).send("Missing fields");
     }
 
-    db.query(
-      'INSERT INTO Medication (med_id, name, type, intake_instruction) VALUES (?, ?, ?, ?)',
-      [med_id, name, type, intake_instruction],
-      (err, res) => {
-        if (err) return reject(err);
-        resolve({ id: med_id, name, type, intake_instruction });
-      }
-    );
-  });
-};
-*/
-
-// Update medication
-medication.put("/:id", async (req, res) => {
-  try {
-    await DB.updateMedication(req.params.id, req.body);
+    await DB.updateMedication(req.params.id, { name, type, intake_instruction });
     res.sendStatus(204);
   } catch (err) {
     console.log(err);
     res.sendStatus(500);
   }
 });
+
 
 // Delete medication
 medication.delete("/:id", async (req, res) => {

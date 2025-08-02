@@ -6,8 +6,8 @@ const bodyParser = require("body-parser");
 const urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 // Middleware to parse both JSON and URL-encoded forms
-medication.use(bodyParser.json());
-medication.use(urlencodedParser);
+user.use(bodyParser.json());
+user.use(urlencodedParser);
 
 user.get('/', async (req, res) => {
   try {
