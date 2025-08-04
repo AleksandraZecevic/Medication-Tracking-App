@@ -29,6 +29,9 @@ caregiver.post("/", urlencodedParser, async (req, res) => {
     const user = await DB.getUserById(user_id);
     if (!user) return res.status(404).send("User not found");
 
+    const cg = await DB.getCaregiverById(user_id);
+    if(cg) return res.status(404).send("Caregiver already exits with this id");
+
     if (user.role !== "caregiver") {
       return res.status(400).send("User does not have the role 'caregiver'");
     }
@@ -58,18 +61,32 @@ caregiver.get("/:id", async (req, res) => {
 // Update caregiver
 caregiver.put("/:id", urlencodedParser, async (req, res) => {
   const { certification, care_center_name } = req.body;
+  const user_id = parseInt(req.params.id, 10);
 
   try {
-    await DB.updateCaregiver(req.params.id, {
-      certification,
-      care_center_name,
-    });
-    res.status(204).send();
+   
+    const existing = await DB.getCaregiverById(user_id);
+    if (!existing) {
+      return res.status(404).json({ error: "Caregiver not found" });
+    }
+
+    // merge existing values with new ones (for partial update)
+    const updatedData = {
+      certification: certification !== undefined ? certification : existing.certification,
+      care_center_name: care_center_name !== undefined ? care_center_name : existing.care_center_name
+    };
+
+    //actuall update
+    const updated = await DB.updateCaregiver({ user_id, ...updatedData });
+
+    res.status(200).json({ message: "Caregiver updated successfully", data: updated });
   } catch (err) {
-    console.error(err);
-    res.sendStatus(500);
+    console.error(err.message || err);
+    res.status(500).json({ error: err.message || "Internal Server Error" });
   }
 });
+
+
 
 // Delete caregiver
 caregiver.delete("/:id", async (req, res) => {

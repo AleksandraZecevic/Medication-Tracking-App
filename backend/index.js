@@ -17,7 +17,9 @@ const donationCenter = require("./routes/donationcenter");
 const caregiver = require("./routes/caregiver");
 const healthcareWorker = require("./routes/healthcareWorker");
 const medEntry = require("./routes/medicatonEntry.js");
+const reminder = require('./routes/reminder');
 
+app.use('/reminder', reminder);
 app.use('/medication', medication);
 app.use('/user', userRoutes);
 app.use('/donationcenter', donationCenter);

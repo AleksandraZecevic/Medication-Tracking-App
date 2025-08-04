@@ -18,6 +18,15 @@ db.connect((err) => {
 
 let dataPool = {};
 
+// Helper: generic partial update pattern
+async function partialUpdate(getByIdFn, updateFn, id, newData) {
+  const existing = await getByIdFn(id);
+  if (!existing) throw new Error("Record not found");
+
+  const merged = { ...existing, ...newData };
+  return updateFn(id, merged);
+}
+
 // USER -----------------------------------------------------------------------------------------------------------
 // USER -----------------------------------------------------------------------------------------------------------
 
@@ -69,18 +78,24 @@ dataPool.createUser = (user) => {
 };
 
 
-dataPool.updateUser = (id, user) => {
-  const { name, lastname, email, password, role, language_pref } = user;
-  return new Promise((resolve, reject) => {
-    db.query(
-      'UPDATE User SET name = ?, lastname = ?, email = ?, password = ?, role = ?, language_pref = ? WHERE user_id = ?',
-      [name, lastname, email, password, role, language_pref, id],
-      (err) => {
-        if (err) return reject(err);
-        resolve({ id, ...user });
-      }
-    );
-  });
+dataPool.updateUser = async (id, user) => {
+  return partialUpdate(
+    dataPool.getUserById,
+    (id, u) =>
+      new Promise((resolve, reject) => {
+        const { name, lastname, email, password, role, language_pref } = u;
+        db.query(
+          'UPDATE User SET name = ?, lastname = ?, email = ?, password = ?, role = ?, language_pref = ? WHERE user_id = ?',
+          [name, lastname, email, password, role, language_pref, id],
+          (err) => {
+            if (err) return reject(err);
+            resolve({ id, ...u });
+          }
+        );
+      }),
+    id,
+    user
+  );
 };
 
 dataPool.deleteUser = (id) => {
@@ -142,22 +157,27 @@ dataPool.getMedicationById = (id) => {
   });
 };
 
-dataPool.updateMedication = (id, medication) => {
+dataPool.updateMedication = async (id, medication) => {
   if (!medication || typeof medication !== "object") {
     return Promise.reject(new Error("Invalid medication data"));
   }
-  const { name, type, intake_instruction } = medication;
-
-  return new Promise((resolve, reject) => {
-     db.query(
-      'UPDATE Medication SET name = ?, type = ?, intake_instruction = ? WHERE med_id = ?',
-      [name, type, intake_instruction, id],
-      (err, res) => {
-        if (err) return reject(err);
-        resolve(res);
-      }
-    );
-  });
+  return partialUpdate(
+    dataPool.getMedicationById,
+    (id, m) =>
+      new Promise((resolve, reject) => {
+        const { name, type, intake_instruction } = m;
+        db.query(
+          'UPDATE Medication SET name = ?, type = ?, intake_instruction = ? WHERE med_id = ?',
+          [name, type, intake_instruction, id],
+          (err, res) => {
+            if (err) return reject(err);
+            resolve(res);
+          }
+        );
+      }),
+    id,
+    medication
+  );
 };
 
 dataPool.deleteMedication = (id) => {
@@ -195,17 +215,33 @@ dataPool.getAllCaregivers = () => {
   });
 };
 
-dataPool.updateCaregiver = ({ user_id, certification, care_center_name }) => {
+dataPool.getCaregiverById = (user_id) => {
   return new Promise((resolve, reject) => {
-    db.query(
-      'UPDATE Caregiver SET certification = ?, care_center_name = ? WHERE user_id = ?',
-      [certification, care_center_name, user_id],
-      (err, res) => {
-        if (err) return reject(err);
-        resolve({ user_id, certification, care_center_name });
-      }
-    );
+    db.query('SELECT * FROM Caregiver WHERE user_id = ?', [user_id], (err, res) => {
+      if (err) return reject(err);
+      resolve(res[0]);
+    });
   });
+};
+
+dataPool.updateCaregiver = async ({ user_id, certification, care_center_name }) => {
+  return partialUpdate(
+    dataPool.getCaregiverById,
+    (id, c) =>
+      new Promise((resolve, reject) => {
+        const { certification, care_center_name } = c;
+        db.query(
+          'UPDATE Caregiver SET certification = ?, care_center_name = ? WHERE user_id = ?',
+          [certification, care_center_name, id],
+          (err, res) => {
+            if (err) return reject(err);
+            resolve({ user_id: id, ...c });
+          }
+        );
+      }),
+    user_id,
+    { certification, care_center_name }
+  );
 };
 
 dataPool.deleteCaregiver = (user_id) => {
@@ -245,19 +281,34 @@ dataPool.getAllDonationCenters = () => {
   });
 };
 
-dataPool.updateDonationCenter = ({ user_id, center_name, address, verification_status }) => {
+dataPool.getDonationCenterById = (user_id) => {
   return new Promise((resolve, reject) => {
-    db.query(
-      'UPDATE `Donation Center` SET center_name = ?, address = ?, verification_status = ? WHERE user_id = ?',
-      [center_name, address, verification_status, user_id],
-      (err, res) => {
-        if (err) return reject(err);
-        resolve({ user_id, center_name, address, verification_status });
-      }
-    );
+    db.query('SELECT * FROM `Donation Center` WHERE user_id = ?', [user_id], (err, res) => {
+      if (err) return reject(err);
+      resolve(res[0]);
+    });
   });
 };
 
+dataPool.updateDonationCenter = async ({ user_id, center_name, address, verification_status }) => {
+  return partialUpdate(
+    dataPool.getDonationCenterById,
+    (id, d) =>
+      new Promise((resolve, reject) => {
+        const { center_name, address, verification_status } = d;
+        db.query(
+          'UPDATE `Donation Center` SET center_name = ?, address = ?, verification_status = ? WHERE user_id = ?',
+          [center_name, address, verification_status, id],
+          (err, res) => {
+            if (err) return reject(err);
+            resolve({ user_id: id, ...d });
+          }
+        );
+      }),
+    user_id,
+    { center_name, address, verification_status }
+  );
+};
 
 dataPool.deleteDonationCenter = (user_id) => {
   return new Promise((resolve, reject) => {
@@ -296,18 +347,53 @@ dataPool.getAllHealthCareWorkers = () => {
   });
 };
 
-dataPool.updateHealthcareWorker = ({ user_id, licence_num, specialization, institution }) => {
+dataPool.getHealthCareWorkerById = (user_id) => {
   return new Promise((resolve, reject) => {
-    db.query(
-      'UPDATE `HealthCare Worker` SET licence_num = ?, specialization = ?, institution = ? WHERE user_id = ?',
-      [licence_num, specialization, institution, user_id],
-      (err, res) => {
-        if (err) return reject(err);
-        resolve({ user_id, licence_num, specialization, institution });
-      }
-    );
+    db.query('SELECT * FROM `HealthCare Worker` WHERE user_id = ?', [user_id], (err, res) => {
+      if (err) return reject(err);
+      resolve(res[0]); 
+    });
   });
 };
+
+dataPool.updateHealthcareWorker = async (id, worker) => {
+  return partialUpdate(
+    dataPool.getHealthCareWorkerById,
+    (id, w) =>
+      new Promise((resolve, reject) => {
+        const { licence_num, specialization, institution } = w;
+        db.query(
+          'UPDATE `HealthCare Worker` SET licence_num = ?, specialization = ?, institution = ? WHERE user_id = ?',
+          [licence_num, specialization, institution, id],
+          (err, res) => {
+            if (err) return reject(err);
+            if (res.affectedRows === 0) {
+              return reject(new Error("Healthcare worker not found or no changes made"));
+            }
+            resolve({ id, ...w });
+          }
+        );
+      }),
+    id,
+    worker
+  );
+};
+
+dataPool.healthcareWorkerLicenceExists = (licence_num, excludeUserId = null) => {
+  return new Promise((resolve, reject) => {
+    const query = excludeUserId
+      ? 'SELECT * FROM `HealthCare Worker` WHERE licence_num = ? AND user_id != ?'
+      : 'SELECT * FROM `HealthCare Worker` WHERE licence_num = ?';
+
+    const params = excludeUserId ? [licence_num, excludeUserId] : [licence_num];
+
+    db.query(query, params, (err, results) => {
+      if (err) return reject(err);
+      resolve(results.length > 0);
+    });
+  });
+};
+
 
 // Delete HealthCare Worker by user_id
 dataPool.deleteHealthcareWorker = (user_id) => {
@@ -376,37 +462,66 @@ dataPool.getMediEntryById = (id) => {
   });
 };
 
-dataPool.updateMedEntry = (entry_id, medE) => {
-  const { user_id, med_id, purchase_date, expiration_date, prescribed_by, donation_status } = medE;
+dataPool.updateMedEntry = async (entry_id, medE) => {
+  try {
+    //Fetch existing entry
+    const existing = await dataPool.getMediEntryById(entry_id);
+    if (!existing) throw new Error("Medication Entry not found");
 
-  return new Promise(async (resolve, reject) => {
-    try {
-      if (![user_id, med_id, prescribed_by].every(id => Number.isInteger(Number(id)))) {
-        return reject(new Error("user_id, med_id, and prescribed_by must be valid integers"));
-      }
+    // Merge existing with new data (partial update)
+    const merged = { ...existing, ...medE };
 
-      const checks = await Promise.all([
-        new Promise((res, rej) => db.query('SELECT user_id FROM User WHERE user_id = ?', [user_id], (e, r) => e ? rej(e) : res(r.length > 0))),
-        new Promise((res, rej) => db.query('SELECT med_id FROM Medication WHERE med_id = ?', [med_id], (e, r) => e ? rej(e) : res(r.length > 0))),
-        new Promise((res, rej) => db.query('SELECT user_id FROM `HealthCare Worker` WHERE user_id = ?', [prescribed_by], (e, r) => e ? rej(e) : res(r.length > 0)))
-      ]);
+    const { user_id, med_id, prescribed_by } = merged;
 
-      if (checks.includes(false)) {
-        return reject(new Error("One or more referenced IDs do not exist (user_id, med_id, prescribed_by)"));
-      }
+    if (![user_id, med_id, prescribed_by].every(id => Number.isInteger(Number(id)))) {
+      throw new Error("user_id, med_id, and prescribed_by must be valid integers");
+    }
 
+    const checks = await Promise.all([
+      new Promise((res, rej) =>
+        db.query('SELECT user_id FROM User WHERE user_id = ?', [user_id], (e, r) =>
+          e ? rej(e) : res(r.length > 0)
+        )
+      ),
+      new Promise((res, rej) =>
+        db.query('SELECT med_id FROM Medication WHERE med_id = ?', [med_id], (e, r) =>
+          e ? rej(e) : res(r.length > 0)
+        )
+      ),
+      new Promise((res, rej) =>
+        db.query('SELECT user_id FROM `HealthCare Worker` WHERE user_id = ?', [prescribed_by], (e, r) =>
+          e ? rej(e) : res(r.length > 0)
+        )
+      )
+    ]);
+
+    if (checks.includes(false)) {
+      throw new Error("One or more referenced IDs do not exist (user_id, med_id, prescribed_by)");
+    }
+
+    // actual update
+    return new Promise((resolve, reject) => {
       db.query(
         'UPDATE `Medication Entry` SET user_id = ?, med_id = ?, purchase_date = ?, expiration_date = ?, prescribed_by = ?, donation_status = ? WHERE entry_id = ?',
-        [user_id, med_id, purchase_date, expiration_date, prescribed_by, donation_status, entry_id],
+        [
+          merged.user_id,
+          merged.med_id,
+          merged.purchase_date,
+          merged.expiration_date,
+          merged.prescribed_by,
+          merged.donation_status,
+          entry_id,
+        ],
         (err, res) => {
           if (err) return reject(err);
-          resolve(res);
+          resolve({ entry_id, ...merged });
         }
       );
-    } catch (err) {
-      reject(err);
-    }
-  });
+    });
+
+  } catch (err) {
+    return Promise.reject(err);
+  }
 };
 
 
@@ -418,6 +533,75 @@ dataPool.deleteMedication = (id) => {
     });
   });
 };
+
+// REMINDER -------------------------------------------------------------------------------------------------------------
+// REMINDER -------------------------------------------------------------------------------------------------------------
+
+// Create reminder
+dataPool.createReminder = ({ rem_id, entry_id, time, note }) => {
+  return new Promise((resolve, reject) => {
+    db.query(
+      'INSERT INTO Reminder (rem_id, entry_id, time, note) VALUES (?, ?, ?, ?)',
+      [rem_id, entry_id, time, note],
+      (err) => {
+        if (err) return reject(err);
+        resolve({ rem_id, entry_id, time, note });
+      }
+    );
+  });
+};
+
+// Get all reminders
+dataPool.getAllReminders = () => {
+  return new Promise((resolve, reject) => {
+    db.query('SELECT * FROM Reminder', (err, results) => {
+      if (err) return reject(err);
+      resolve(results);
+    });
+  });
+};
+
+// get reminder by id
+dataPool.getReminderById = (rem_id) => {
+  return new Promise((resolve, reject) => {
+    db.query('SELECT * FROM Reminder WHERE rem_id = ?', [rem_id], (err, res) => {
+      if (err) return reject(err);
+      resolve(res[0]);
+    });
+  });
+};
+
+// Delete reminder
+dataPool.deleteReminder = (rem_id) => {
+  return new Promise((resolve, reject) => {
+    db.query('DELETE FROM Reminder WHERE rem_id = ?', [rem_id], (err) => {
+      if (err) return reject(err);
+      resolve({ message: 'Reminder deleted successfully', rem_id });
+    });
+  });
+};
+
+// update reminder
+dataPool.updateReminder = async (rem_id, reminderData) => {
+  return partialUpdate(
+    dataPool.getReminderById,
+    (id, r) =>
+      new Promise((resolve, reject) => {
+        const { entry_id, time, note } = r;
+        db.query(
+          'UPDATE Reminder SET entry_id = ?, time = ?, note = ? WHERE rem_id = ?',
+          [entry_id, time, note, id],
+          (err, res) => {
+            if (err) return reject(err);
+            resolve({ rem_id: id, ...r });
+          }
+        );
+      }),
+    rem_id,
+    reminderData
+  );
+};
+
 
 
 module.exports = dataPool;
