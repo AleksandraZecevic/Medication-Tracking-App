@@ -75,32 +75,25 @@ medEntry.post("/", urlencodedParser, async (req, res) => {
   }
 });
 
-// Update a medication entry
+// update 
 medEntry.put("/:id", urlencodedParser, async (req, res) => {
   try {
-    const {
-      user_id,
-      med_id,
-      purchase_date,
-      expiration_date,
-      prescribed_by,
-      donation_status
-    } = req.body;
+    const updateData = {};
 
-    if (!user_id || !med_id || !prescribed_by) {
-      return res.status(400).send("Missing required fields");
+    // Only include fields if they were sent in the request
+    if (req.body.user_id !== undefined) updateData.user_id = Number(req.body.user_id);
+    if (req.body.med_id !== undefined) updateData.med_id = Number(req.body.med_id);
+    if (req.body.purchase_date !== undefined) updateData.purchase_date = req.body.purchase_date;
+    if (req.body.expiration_date !== undefined) updateData.expiration_date = req.body.expiration_date;
+    if (req.body.prescribed_by !== undefined) updateData.prescribed_by = Number(req.body.prescribed_by);
+    if (req.body.donation_status !== undefined) updateData.donation_status = req.body.donation_status;
+
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).send("No valid fields provided for update");
     }
 
-    await DB.updateMedEntry(req.params.id, {
-      user_id: Number(user_id),
-      med_id: Number(med_id),
-      purchase_date,
-      expiration_date,
-      prescribed_by: Number(prescribed_by),
-      donation_status
-    });
-
-    res.sendStatus(204);
+    const updated = await DB.updateMedEntry(req.params.id, updateData);
+    res.status(200).json({ message: "Medication Entry updated", data: updated });
   } catch (err) {
     console.error("UPDATE ERROR:", err.message);
     res.status(500).send(err.message);

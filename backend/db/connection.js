@@ -77,7 +77,6 @@ dataPool.createUser = (user) => {
   });
 };
 
-
 dataPool.updateUser = async (id, user) => {
   return partialUpdate(
     dataPool.getUserById,
@@ -253,7 +252,6 @@ dataPool.deleteCaregiver = (user_id) => {
   });
 };
 
-
 // DONATION CENTER --------------------------------------------------------------------------------------------------
 // DONATION CENTER --------------------------------------------------------------------------------------------------
 
@@ -318,7 +316,6 @@ dataPool.deleteDonationCenter = (user_id) => {
     });
   });
 };
-
 
 // HEALTHCARE WORKER --------------------------------------------------------------------------------------------------
 // HEALTHCARE WORKER --------------------------------------------------------------------------------------------------
@@ -394,7 +391,6 @@ dataPool.healthcareWorkerLicenceExists = (licence_num, excludeUserId = null) => 
   });
 };
 
-
 // Delete HealthCare Worker by user_id
 dataPool.deleteHealthcareWorker = (user_id) => {
   return new Promise((resolve, reject) => {
@@ -451,7 +447,6 @@ dataPool.createMedEntry = (medE) => {
     }
   });
 };
-
 
 dataPool.getMediEntryById = (id) => {
   return new Promise((resolve, reject) => {
@@ -524,7 +519,6 @@ dataPool.updateMedEntry = async (entry_id, medE) => {
   }
 };
 
-
 dataPool.deleteMedication = (id) => {
   return new Promise((resolve, reject) => {
     db.query('DELETE FROM `Medication Entry` WHERE entry_id = ?', [id], (err, res) => {
@@ -537,7 +531,6 @@ dataPool.deleteMedication = (id) => {
 // REMINDER -------------------------------------------------------------------------------------------------------------
 // REMINDER -------------------------------------------------------------------------------------------------------------
 
-// Create reminder
 dataPool.createReminder = ({ rem_id, entry_id, time, note }) => {
   return new Promise((resolve, reject) => {
     db.query(
@@ -551,7 +544,6 @@ dataPool.createReminder = ({ rem_id, entry_id, time, note }) => {
   });
 };
 
-// Get all reminders
 dataPool.getAllReminders = () => {
   return new Promise((resolve, reject) => {
     db.query('SELECT * FROM Reminder', (err, results) => {
@@ -561,7 +553,6 @@ dataPool.getAllReminders = () => {
   });
 };
 
-// get reminder by id
 dataPool.getReminderById = (rem_id) => {
   return new Promise((resolve, reject) => {
     db.query('SELECT * FROM Reminder WHERE rem_id = ?', [rem_id], (err, res) => {
@@ -571,7 +562,6 @@ dataPool.getReminderById = (rem_id) => {
   });
 };
 
-// Delete reminder
 dataPool.deleteReminder = (rem_id) => {
   return new Promise((resolve, reject) => {
     db.query('DELETE FROM Reminder WHERE rem_id = ?', [rem_id], (err) => {
@@ -581,7 +571,6 @@ dataPool.deleteReminder = (rem_id) => {
   });
 };
 
-// update reminder
 dataPool.updateReminder = async (rem_id, reminderData) => {
   return partialUpdate(
     dataPool.getReminderById,
@@ -602,6 +591,221 @@ dataPool.updateReminder = async (rem_id, reminderData) => {
   );
 };
 
+// INTAKE LOG -------------------------------------------------------------------------------------------------------------
+// INTAKE LOG -------------------------------------------------------------------------------------------------------------
 
+dataPool.createIntakeLog = ({ log_id, entry_id, timestamp }) => {
+  return new Promise((resolve, reject) => {
+    db.query(
+      'INSERT INTO `IntakeLog` (log_id, entry_id, timestamp) VALUES (?, ?, ?)',
+      [log_id, entry_id, timestamp],
+      (err, res) => {
+        if (err) return reject(err);
+        resolve({ log_id, entry_id, timestamp });
+      }
+    );
+  });
+};
+
+dataPool.getAllIntakeLogs = () => {
+  return new Promise((resolve, reject) => {
+    db.query('SELECT * FROM `IntakeLog`', (err, res) => {
+      if (err) return reject(err);
+      resolve(res);
+    });
+  });
+};
+
+dataPool.getIntakeLogById = (log_id) => {
+  return new Promise((resolve, reject) => {
+    db.query('SELECT * FROM `IntakeLog` WHERE log_id = ?', [log_id], (err, res) => {
+      if (err) return reject(err);
+      resolve(res[0]);
+    });
+  });
+};
+
+dataPool.updateIntakeLog = async (log_id, logData) => {
+  return partialUpdate(
+    dataPool.getIntakeLogById,
+    (id, merged) =>
+      new Promise((resolve, reject) => {
+        const { entry_id, timestamp } = merged;
+        db.query(
+          'UPDATE `IntakeLog` SET entry_id = ?, timestamp = ? WHERE log_id = ?',
+          [entry_id, timestamp, id],
+          (err) => {
+            if (err) return reject(err);
+            resolve({ log_id: id, ...merged });
+          }
+        );
+      }),
+    log_id,
+    logData
+  );
+};
+
+dataPool.deleteIntakeLog = (log_id) => {
+  return new Promise((resolve, reject) => {
+    db.query('DELETE FROM `IntakeLog` WHERE log_id = ?', [log_id], (err, res) => {
+      if (err) return reject(err);
+      resolve({ message: 'IntakeLog deleted successfully', log_id });
+    });
+  });
+};
+
+// SIDE EFFECT -------------------------------------------------------------------------------------------------------------
+// SIDE EFFECT -------------------------------------------------------------------------------------------------------------
+
+dataPool.getSideEffectById = (id) => {
+  return new Promise((resolve, reject) => {
+    db.query('SELECT * FROM `Side Effect` WHERE se_id = ?', [id], (err, res) => {
+      if (err) return reject(err);
+      resolve(res[0]);
+    });
+  });
+};
+
+dataPool.allSideEffects = () => {
+  return new Promise((resolve, reject) => {
+    db.query('SELECT * FROM `Side Effect`', (err, res) => {
+      if (err) return reject(err);
+      resolve(res);
+    });
+  });
+};
+
+dataPool.createSideEffect = ({ se_id, entry_id, description }) => {
+  return new Promise((resolve, reject) => {
+    db.query(
+      'INSERT INTO `Side Effect` (se_id, entry_id, description) VALUES (?, ?, ?)',
+      [se_id, entry_id, description],
+      (err) => {
+        if (err) return reject(err);
+        resolve({ se_id, entry_id, description });
+      }
+    );
+  });
+};
+
+dataPool.updateSideEffect = async (se_id, data) => {
+  return partialUpdate(
+    dataPool.getSideEffectById,
+    (id, merged) =>
+      new Promise((resolve, reject) => {
+        const { entry_id, description } = merged;
+        db.query(
+          'UPDATE `Side Effect` SET entry_id = ?, description = ? WHERE se_id = ?',
+          [entry_id, description, id],
+          (err) => {
+            if (err) return reject(err);
+            resolve({ se_id: id, ...merged });
+          }
+        );
+      }),
+    se_id,
+    data
+  );
+};
+
+dataPool.deleteSideEffect = (id) => {
+  return new Promise((resolve, reject) => {
+    db.query('DELETE FROM `Side Effect` WHERE se_id = ?', [id], (err) => {
+      if (err) return reject(err);
+      resolve({ message: 'SideEffect deleted', se_id: id });
+    });
+  });
+};
+
+// DONATION REQUEST -------------------------------------------------------------------------------------------------------------
+// DONATION REQUEST -------------------------------------------------------------------------------------------------------------
+
+dataPool.isDonationCenterUser = (center_id) => {
+  return new Promise((resolve, reject) => {
+    db.query(
+      'SELECT role FROM User WHERE user_id = ? AND role = "donation center"',
+      [center_id],
+      (err, result) => {
+        if (err) return reject(err);
+        resolve(result.length > 0); // true if found
+      }
+    );
+  });
+};
+
+
+dataPool.createDonationRequest = async ({ dreq_id, entry_id, center_id, status }) => {
+  // validate center_id is a valid user with role "donation center"
+  const isValidCenter = await dataPool.isDonationCenterUser(center_id);
+  if (!isValidCenter) {
+    throw new Error("center_id must belong to a user with role 'donation center'");
+  }
+
+  return new Promise((resolve, reject) => {
+    db.query(
+      'INSERT INTO `Donation Request` (dreq_id, entry_id, center_id, status) VALUES (?, ?, ?, ?)',
+      [dreq_id, entry_id, center_id, status],
+      (err, res) => {
+        if (err) return reject(err);
+        resolve({ dreq_id, entry_id, center_id, status });
+      }
+    );
+  });
+};
+
+
+dataPool.getAllDonationRequests = () => {
+  return new Promise((resolve, reject) => {
+    db.query('SELECT * FROM `Donation Request`', (err, res) => {
+      if (err) return reject(err);
+      resolve(res);
+    });
+  });
+};
+
+dataPool.getDonationRequestById = (id) => {
+  return new Promise((resolve, reject) => {
+    db.query('SELECT * FROM `Donation Request` WHERE dreq_id = ?', [id], (err, res) => {
+      if (err) return reject(err);
+      resolve(res[0]);
+    });
+  });
+};
+
+dataPool.updateDonationRequest = async (id, data) => {
+  // First get the existing record and merge with new data
+  const existing = await dataPool.getDonationRequestById(id);
+  if (!existing) throw new Error("Donation request not found");
+
+  const merged = { ...existing, ...data };
+  const { entry_id, center_id, status } = merged;
+
+  // Validate center_id before going into DB query
+  const isValidCenter = await dataPool.isDonationCenterUser(center_id);
+  if (!isValidCenter) {
+    throw new Error("center_id must belong to a user with role 'donation center'");
+  }
+
+  // Now perform update
+  return new Promise((resolve, reject) => {
+    db.query(
+      'UPDATE `Donation Request` SET entry_id = ?, center_id = ?, status = ? WHERE dreq_id = ?',
+      [entry_id, center_id, status, id],
+      (err) => {
+        if (err) return reject(err);
+        resolve({ dreq_id: id, ...merged });
+      }
+    );
+  });
+};
+
+dataPool.deleteDonationRequest = (id) => {
+  return new Promise((resolve, reject) => {
+    db.query('DELETE FROM `Donation Request` WHERE dreq_id = ?', [id], (err) => {
+      if (err) return reject(err);
+      resolve({ message: "Donation Request deleted", dreq_id: id });
+    });
+  });
+};
 
 module.exports = dataPool;

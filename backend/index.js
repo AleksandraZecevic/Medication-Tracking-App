@@ -18,7 +18,13 @@ const caregiver = require("./routes/caregiver");
 const healthcareWorker = require("./routes/healthcareWorker");
 const medEntry = require("./routes/medicatonEntry.js");
 const reminder = require('./routes/reminder');
+const intakeLog = require("./routes/intakelog");
+const sideEffect = require("./routes/sideEffect");
+const donationRequest = require("./routes/donationRequest");
 
+app.use("/donationrequest", donationRequest);
+app.use('/sideeffect', sideEffect);
+app.use("/intakelog", intakeLog);
 app.use('/reminder', reminder);
 app.use('/medication', medication);
 app.use('/user', userRoutes);
