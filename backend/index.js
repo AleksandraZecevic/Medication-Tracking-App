@@ -21,7 +21,9 @@ const reminder = require('./routes/reminder');
 const intakeLog = require("./routes/intakelog");
 const sideEffect = require("./routes/sideEffect");
 const donationRequest = require("./routes/donationRequest");
+const loginUser = require('./routes/login');
 
+app.use('/auth', loginUser);
 app.use("/donationrequest", donationRequest);
 app.use('/sideeffect', sideEffect);
 app.use("/intakelog", intakeLog);

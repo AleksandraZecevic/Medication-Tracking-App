@@ -1,52 +1,70 @@
-const mysql = require('mysql2');
-require('dotenv').config();
+  const mysql = require('mysql2');
+  require('dotenv').config();
 
-const db = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME
-});
+  const db = mysql.createConnection({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME
+  });
 
-db.connect((err) => {
-  if (err) {
-    console.error('Database connection failed: ', err.stack);
-    return;
+  db.connect((err) => {
+    if (err) {
+      console.error('Database connection failed: ', err.stack);
+      return;
+    }
+    console.log('Connected to database.');
+  });
+
+  let dataPool = {};
+
+  // Helper: generic partial update pattern
+  async function partialUpdate(getByIdFn, updateFn, id, newData) {
+    const existing = await getByIdFn(id);
+    if (!existing) throw new Error("Record not found");
+
+    const merged = { ...existing, ...newData };
+    return updateFn(id, merged);
   }
-  console.log('Connected to database.');
-});
 
-let dataPool = {};
+  // USER -----------------------------------------------------------------------------------------------------------
+  // USER -----------------------------------------------------------------------------------------------------------
 
-// Helper: generic partial update pattern
-async function partialUpdate(getByIdFn, updateFn, id, newData) {
-  const existing = await getByIdFn(id);
-  if (!existing) throw new Error("Record not found");
+  dataPool.getAllUsers = () => {
+    return new Promise((resolve, reject) => {
+      db.query('SELECT * FROM User', (err, res) => {
+        if (err) return reject(err);
+        resolve(res);
+      });
+    });
+  };
 
-  const merged = { ...existing, ...newData };
-  return updateFn(id, merged);
-}
-
-// USER -----------------------------------------------------------------------------------------------------------
-// USER -----------------------------------------------------------------------------------------------------------
-
-dataPool.getAllUsers = () => {
+  dataPool.getMaxUserId = () => {
   return new Promise((resolve, reject) => {
-    db.query('SELECT * FROM User', (err, res) => {
+    db.query('SELECT MAX(user_id) AS maxId FROM User', (err, results) => {
       if (err) return reject(err);
-      resolve(res);
+      resolve(results[0].maxId);
     });
   });
 };
 
-dataPool.getUserById = (id) => {
-  return new Promise((resolve, reject) => {
-    db.query('SELECT * FROM User WHERE user_id = ?', [id], (err, res) => {
-      if (err) return reject(err);
-      resolve(res[0]);
+  dataPool.getUserById = (id) => {
+    return new Promise((resolve, reject) => {
+      db.query('SELECT * FROM User WHERE user_id = ?', [id], (err, res) => {
+        if (err) return reject(err);
+        resolve(res[0]);
+      });
     });
-  });
-};
+  };
+
+  dataPool.getUserByEmail = (email) => {
+    return new Promise((resolve, reject) => {
+      db.query('SELECT * FROM User WHERE email = ?', [email], (err, res) => {
+        if (err) return reject(err);
+        resolve(res[0]); // undefined if no user
+      });
+    });
+  };
 
 dataPool.createUser = (user) => {
   const { user_id, name, lastname, email, password, role, language_pref } = user;
@@ -64,47 +82,57 @@ dataPool.createUser = (user) => {
         return reject(new Error(`User with ID ${user_id} already exists.`));
       }
 
-      // Step 2: Proceed with insertion
-      db.query(
-        'INSERT INTO User (user_id, name, lastname, email, password, role, language_pref) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [user_id, name, lastname, email, password, role, language_pref],
-        (err) => {
-          if (err) return reject(err);
-          resolve({ id: user_id, ...user });
-        }
-      );
-    });
-  });
-};
+      // Step 2: Check for existing email
+      db.query('SELECT email FROM User WHERE email = ?', [email], (err, results) => {
+        if (err) return reject(err);
 
-dataPool.updateUser = async (id, user) => {
-  return partialUpdate(
-    dataPool.getUserById,
-    (id, u) =>
-      new Promise((resolve, reject) => {
-        const { name, lastname, email, password, role, language_pref } = u;
+        if (results.length > 0) {
+          return reject(new Error(`Email ${email} is already registered.`));
+        }
+
+        // Step 3: Proceed with insertion
         db.query(
-          'UPDATE User SET name = ?, lastname = ?, email = ?, password = ?, role = ?, language_pref = ? WHERE user_id = ?',
-          [name, lastname, email, password, role, language_pref, id],
+          'INSERT INTO User (user_id, name, lastname, email, password, role, language_pref) VALUES (?, ?, ?, ?, ?, ?, ?)',
+          [user_id, name, lastname, email, password, role, language_pref],
           (err) => {
             if (err) return reject(err);
-            resolve({ id, ...u });
+            resolve({ id: user_id, ...user });
           }
         );
-      }),
-    id,
-    user
-  );
+      }); // closes check email query
+    }); // closes check user_id query
+  }); // closes Promise
 };
 
-dataPool.deleteUser = (id) => {
-  return new Promise((resolve, reject) => {
-    db.query('DELETE FROM User WHERE user_id = ?', [id], (err) => {
-      if (err) return reject(err);
-      resolve({ message: 'User deleted successfully.' });
+
+  dataPool.updateUser = async (id, user) => {
+    return partialUpdate(
+      dataPool.getUserById,
+      (id, u) =>
+        new Promise((resolve, reject) => {
+          const { name, lastname, email, password, role, language_pref } = u;
+          db.query(
+            'UPDATE User SET name = ?, lastname = ?, email = ?, password = ?, role = ?, language_pref = ? WHERE user_id = ?',
+            [name, lastname, email, password, role, language_pref, id],
+            (err) => {
+              if (err) return reject(err);
+              resolve({ id, ...u });
+            }
+          );
+        }),
+      id,
+      user
+    );
+  };
+
+  dataPool.deleteUser = (id) => {
+    return new Promise((resolve, reject) => {
+      db.query('DELETE FROM User WHERE user_id = ?', [id], (err) => {
+        if (err) return reject(err);
+        resolve({ message: 'User deleted successfully.' });
+      });
     });
-  });
-};
+  };
 
 // MEDICATION ------------------------------------------------------------------------------------------------------
 // MEDICATION ------------------------------------------------------------------------------------------------------
@@ -752,7 +780,6 @@ dataPool.createDonationRequest = async ({ dreq_id, entry_id, center_id, status }
     );
   });
 };
-
 
 dataPool.getAllDonationRequests = () => {
   return new Promise((resolve, reject) => {

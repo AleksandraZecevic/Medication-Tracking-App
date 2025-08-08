@@ -19,6 +19,17 @@ user.get('/', async (req, res) => {
   }
 });
 
+//max id
+user.get('/nextid', async (req, res) => {
+  try {
+    const maxId = await DB.getMaxUserId(); 
+    const nextId = (maxId || 0) + 1;
+    res.json({ nextId });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // get user by id
 user.get('/:id', async (req, res) => {
   try {
@@ -29,6 +40,7 @@ user.get('/:id', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // create user
 user.post('/', urlencodedParser ,async (req, res) => {

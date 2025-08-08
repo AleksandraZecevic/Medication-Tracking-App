@@ -1,0 +1,93 @@
+/* General page styles */
+.page {
+  min-height: 100vh;
+  background-color: #2E7D32; /* calm green */
+  color: #EEE;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding-top: 60px;
+  text-align: center;
+}
+
+/* Title */
+.title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+/* Slogan */
+.slogan {
+  font-size: 1.3rem;
+  font-weight: 300;
+  margin-top: 0;
+  margin-bottom: 40px;
+  color: #C8E6C9;
+}
+
+/* Form container */
+.form-container {
+  background-color: #A5D6A7; /* lighter green */
+  margin: 0 auto;
+  padding: 30px;
+  border-radius: 8px;
+  max-width: 400px;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+  text-align: left;
+}
+
+/* Inputs and selects */
+.input {
+  display: block;
+  width: 100%;
+  padding: 12px 10px;
+  margin-bottom: 16px;
+  border-radius: 6px;
+  border: 1px solid #388E3C;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+/* Buttons */
+.button {
+  width: 100%;
+  padding: 14px;
+  font-weight: 600;
+  font-size: 18px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.button.primary {
+  background-color: #1B5E20;
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.button.logout {
+  background-color: #D32F2F;
+  color: #fff;
+  max-width: 200px;
+  margin: 40px auto 0;
+  display: block;
+}
+
+/* Link buttons */
+.link-button {
+  background: none;
+  border: none;
+  color: #1B5E20;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 14px;
+  padding: 0;
+  font-weight: 600;
+}
+
+/* Error message */
+.error {
+  color: #D32F2F;
+  font-weight: 600;
+  margin-top: 10px;
+  text-align: center;
+}
