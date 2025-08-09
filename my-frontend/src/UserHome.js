@@ -9,7 +9,7 @@ export default function UserHome({ user, onLogout }) {
 
   const [newMed, setNewMed] = useState({
     med_id: "",
-    name: "",
+    name: "",   
     type: "",
     intake_instruction: "",
   });
@@ -423,9 +423,9 @@ if (res.ok) {
             >
               <option value="">Select Medication</option>
               {allMeds.map((med) => (
-                <option key={med.med_id} value={med.med_id}>
-                  {med.name}
-                </option>
+              <option key={med.med_id} value={med.med_id}>
+                  {med.med_id} - {med.name}
+              </option>
               ))}
             </select>
           </label>
@@ -464,8 +464,8 @@ if (res.ok) {
             >
               <option value="">Select Healthcare Worker</option>
               {healthcareWorkers.map((hw) => (
-                <option key={hw.hw_id} value={hw.hw_id}>
-                  {hw.name} {hw.lastname}
+                <option key={hw.user_id} value={hw.user_id}>
+                 {hw.user_id} - {hw.licence_num} ({hw.specialization})
                 </option>
               ))}
             </select>
