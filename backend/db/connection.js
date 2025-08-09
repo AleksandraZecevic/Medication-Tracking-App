@@ -216,6 +216,16 @@ dataPool.deleteMedication = (id) => {
   });
 };
 
+dataPool.getMaxMedId = () => {
+  return new Promise((resolve, reject) => {
+    db.query('SELECT MAX(med_id) AS maxId FROM Medication', (err, results) => {
+      if (err) return reject(err);
+      resolve(results[0].maxId);
+    });
+  });
+};
+
+
 // CAREGIVER --------------------------------------------------------------------------------------------------
 // CAREGIVER --------------------------------------------------------------------------------------------------
 dataPool.createCaregiver = ({ user_id, certification, care_center_name }) => {
@@ -556,6 +566,15 @@ dataPool.deleteMedication = (id) => {
   });
 };
 
+dataPool.getMaxEntryId = () => {
+  return new Promise((resolve, reject) => {
+    db.query('SELECT MAX(entry_id) AS maxId FROM `Medication Entry`', (err, results) => {
+      if (err) return reject(err);
+      resolve(results[0].maxId);
+    });
+  });
+};
+
 // REMINDER -------------------------------------------------------------------------------------------------------------
 // REMINDER -------------------------------------------------------------------------------------------------------------
 
@@ -577,6 +596,16 @@ dataPool.getAllReminders = () => {
     db.query('SELECT * FROM Reminder', (err, results) => {
       if (err) return reject(err);
       resolve(results);
+    });
+  });
+};
+
+dataPool.getNextRemId = () => {
+  return new Promise((resolve, reject) => {
+    db.query('SELECT MAX(rem_id) AS maxId FROM Reminder', (err, res) => {
+      if (err) return reject(err);
+      const maxId = res[0].maxId || 0;
+      resolve(maxId + 1);
     });
   });
 };
@@ -644,6 +673,16 @@ dataPool.getAllIntakeLogs = () => {
   });
 };
 
+dataPool.getNextLogId = () => {
+  return new Promise((resolve, reject) => {
+    db.query('SELECT MAX(log_id) AS maxId FROM `IntakeLog`', (err, res) => {
+      if (err) return reject(err);
+      const maxId = res[0].maxId || 0;
+      resolve(maxId + 1);
+    });
+  });
+};
+
 dataPool.getIntakeLogById = (log_id) => {
   return new Promise((resolve, reject) => {
     db.query('SELECT * FROM `IntakeLog` WHERE log_id = ?', [log_id], (err, res) => {
@@ -699,6 +738,15 @@ dataPool.allSideEffects = () => {
     db.query('SELECT * FROM `Side Effect`', (err, res) => {
       if (err) return reject(err);
       resolve(res);
+    });
+  });
+};
+
+dataPool.getMaxSEId = () => {
+  return new Promise((resolve, reject) => {
+    db.query('SELECT MAX(se_id) AS maxId FROM `Side Effect`', (err, results) => {
+      if (err) return reject(err);
+      resolve(results[0].maxId);
     });
   });
 };

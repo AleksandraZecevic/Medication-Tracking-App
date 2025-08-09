@@ -9,6 +9,18 @@ const urlencodedParser = bodyParser.urlencoded({ extended: false });
 medEntry.use(bodyParser.json());
 medEntry.use(urlencodedParser);
 
+// Get next entry_id
+medEntry.get('/nextid', async (req, res) => {
+  try {
+    const maxId = await DB.getMaxEntryId();
+    const nextId = (maxId || 0) + 1;
+    res.json({ nextId });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // Get all medication entries
 medEntry.get("/", async (req, res) => {
   try {

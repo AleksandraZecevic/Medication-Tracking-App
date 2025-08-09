@@ -9,6 +9,18 @@ const urlencodedParser = bodyParser.urlencoded({ extended: false });
 sideEffect.use(bodyParser.json());
 sideEffect.use(urlencodedParser);
 
+// Get next se_id
+sideEffect.get('/nextid', async (req, res) => {
+  try {
+    const maxId = await DB.getMaxSEId();
+    const nextId = (maxId || 0) + 1;
+    res.json({ nextId });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // GET all side effects
 sideEffect.get("/", async (req, res) => {
   try {
@@ -33,6 +45,7 @@ sideEffect.get("/:id", async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
+
 
 // POST new side effect
 sideEffect.post("/", urlencodedParser, async (req, res) => {

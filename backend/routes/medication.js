@@ -10,6 +10,17 @@ medication.use(bodyParser.json());
 medication.use(urlencodedParser);
 medication.use(express.json());
 
+// Get next med_id
+medication.get('/nextid', async (req, res) => {
+  try {
+    const maxId = await DB.getMaxMedId();
+    const nextId = (maxId || 0) + 1;
+    res.json({ nextId });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Get all medications
 medication.get("/", async (req, res) => {
   try {
@@ -34,6 +45,7 @@ medication.get("/:id", async (req, res) => {
     res.sendStatus(500);
   }
 });
+
 
 // Create medication
 medication.post("/", urlencodedParser, async (req, res) => {
