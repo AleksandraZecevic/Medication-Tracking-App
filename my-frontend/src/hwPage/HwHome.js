@@ -1,16 +1,208 @@
 import React, { useEffect, useState } from "react";
-import "./HwHome.css";  // create a separate CSS or reuse styles as needed
+import "./HwHome.css";
+
+const API_URL = process.env.REACT_APP_API_URL || "http://88.200.63.148:2004";
 
 export default function HwHome({ hw, onLogout }) {
   const [showSettings, setShowSettings] = useState(false);
+  const [view, setView] = useState("info"); // "info" or "prescriptions"
 
-  // Placeholder handlers - you'll replace with real functions
-  const handleManagePatients = () => alert("Manage Patients clicked");
-  const handleReviewSideEffects = () => alert("Review Side Effects clicked");
-  const handleManagePrescriptions = () => alert("Manage Prescriptions clicked");
-  const handleViewDonations = () => alert("View Donation Requests clicked");
-  const handleUpdateUser = () => alert("Update User Info clicked");
-  const handleDeleteUser = () => alert("Delete User Account clicked");
+  // Profile state
+  const [loadingProfile, setLoadingProfile] = useState(true);
+  const [hcwProfile, setHcwProfile] = useState(null);
+  const [addingProfile, setAddingProfile] = useState(false);
+  const [profileForm, setProfileForm] = useState({
+    licence_num: "",
+    specialization: "",
+    institution: "",
+  });
+  const [profileError, setProfileError] = useState("");
+
+  // Prescriptions state
+  const [loadingPrescriptions, setLoadingPrescriptions] = useState(false);
+  const [prescriptions, setPrescriptions] = useState([]);
+  const [filterUserId, setFilterUserId] = useState("");
+  const [filteredPrescriptions, setFilteredPrescriptions] = useState([]);
+
+  // Side effects UI state
+  const [sideEffectsMap, setSideEffectsMap] = useState({}); // entry_id => [sideEffects]
+  const [selectedEntryId, setSelectedEntryId] = useState(null);
+  const [sideEffectInput, setSideEffectInput] = useState("");
+
+  // Fetch healthcare worker profile on mount or when hw.user_id changes
+  useEffect(() => {
+    setLoadingProfile(true);
+    setProfileError("");
+    fetch(`${API_URL}/healthcareWorker/${hw.user_id}`)
+      .then(async (res) => {
+        if (res.status === 404) {
+          setHcwProfile(null);
+          setAddingProfile(true);
+          setLoadingProfile(false);
+          return null;
+        }
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(text || "Failed to fetch profile");
+        }
+        return res.json();
+      })
+      .then((data) => {
+        if (data) {
+          setHcwProfile(data);
+          setProfileForm({
+            licence_num: data.licence_num || data.license_num || "",
+            specialization: data.specialization || "",
+            institution: data.institution || "",
+          });
+          setAddingProfile(false);
+        }
+      })
+      .catch((err) => {
+        setProfileError("Error loading profile: " + err.message);
+        setHcwProfile(null);
+        setAddingProfile(true);
+      })
+      .finally(() => setLoadingProfile(false));
+  }, [hw.user_id]);
+
+  // Fetch prescriptions when switching to "prescriptions" view or after profile is loaded
+  useEffect(() => {
+    if (view !== "prescriptions") return;
+    if (!hcwProfile && !addingProfile) return;
+
+    setLoadingPrescriptions(true);
+    // Use licence_num or license_num as prescribed_by
+    const prescribedBy = hcwProfile?.licence_num || hcwProfile?.license_num || "";
+    fetch(`${API_URL}/medentries?prescribed_by=${encodeURIComponent(prescribedBy)}`)
+      .then(async (res) => {
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(text || "Failed to fetch prescriptions");
+        }
+        return res.json();
+      })
+      .then((data) => {
+        setPrescriptions(data);
+        setFilteredPrescriptions(data);
+      })
+      .catch((err) => {
+        alert("Error loading prescriptions: " + err.message);
+        setPrescriptions([]);
+        setFilteredPrescriptions([]);
+      })
+      .finally(() => setLoadingPrescriptions(false));
+  }, [view, hcwProfile, addingProfile]);
+
+  // Filter prescriptions by user_id
+  useEffect(() => {
+    if (!filterUserId.trim()) {
+      setFilteredPrescriptions(prescriptions);
+    } else {
+      setFilteredPrescriptions(
+        prescriptions.filter((p) => p.user_id.toString().includes(filterUserId.trim()))
+      );
+    }
+  }, [filterUserId, prescriptions]);
+
+  // Fetch side effects for a given medication entry
+  function fetchSideEffects(entry_id) {
+    fetch(`${API_URL}/sideeffects?entry_ids=${entry_id}`)
+      .then((res) => res.json())
+      .then((effects) => {
+        setSideEffectsMap((prev) => ({ ...prev, [entry_id]: effects }));
+      })
+      .catch(() => {
+        setSideEffectsMap((prev) => ({ ...prev, [entry_id]: [] }));
+      });
+  }
+
+  // Toggle side effects popup for an entry
+  function toggleSideEffects(entry_id) {
+    if (selectedEntryId === entry_id) {
+      setSelectedEntryId(null);
+    } else {
+      setSelectedEntryId(entry_id);
+      fetchSideEffects(entry_id);
+      setSideEffectInput("");
+    }
+  }
+
+  // Handle side effect input change
+  function handleSideEffectInputChange(e) {
+    setSideEffectInput(e.target.value);
+  }
+
+  // Add side effect to an entry
+  function handleAddSideEffect(entry_id) {
+    const desc = sideEffectInput.trim();
+    if (!desc) return alert("Please enter a side effect description");
+
+    fetch(`${API_URL}/sideeffects`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ entry_id, description: desc }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to add side effect");
+        // Refresh side effects list after adding
+        fetchSideEffects(entry_id);
+        setSideEffectInput("");
+      })
+      .catch((err) => alert(err.message));
+  }
+
+  // Handle profile form input changes
+  function handleProfileChange(e) {
+    const { name, value } = e.target;
+    setProfileForm((f) => ({ ...f, [name]: value }));
+  }
+
+  // Submit new profile info
+  function handleProfileSubmit(e) {
+    e.preventDefault();
+    setProfileError("");
+
+    const { licence_num, specialization, institution } = profileForm;
+    if (!licence_num.trim() || !specialization.trim() || !institution.trim()) {
+      setProfileError("Please fill all fields");
+      return;
+    }
+
+    fetch(`${API_URL}/healthcareWorker`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: hw.user_id,
+        licence_num: licence_num.trim(),
+        specialization: specialization.trim(),
+        institution: institution.trim(),
+      }),
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(text || "Failed to save profile");
+        }
+        alert("Profile saved successfully");
+        // Reload profile after save
+        setLoadingProfile(true);
+        setAddingProfile(false);
+        return fetch(`${API_URL}/healthcareWorker/${hw.user_id}`).then((r) => r.json());
+      })
+      .then((data) => {
+        setHcwProfile(data);
+        setProfileForm({
+          licence_num: data.licence_num || data.license_num || "",
+          specialization: data.specialization || "",
+          institution: data.institution || "",
+        });
+      })
+      .catch((err) => {
+        setProfileError("Error saving profile: " + err.message);
+      })
+      .finally(() => setLoadingProfile(false));
+  }
 
   return (
     <div className="page hw-home">
@@ -31,10 +223,16 @@ export default function HwHome({ hw, onLogout }) {
 
       {showSettings && (
         <div className="settings-popup">
-          <button className="button" onClick={handleUpdateUser}>
+          <button
+            className="button"
+            onClick={() => alert("Update User Info clicked")}
+          >
             Update User Info
           </button>
-          <button className="button delete-btn" onClick={handleDeleteUser}>
+          <button
+            className="button delete-btn"
+            onClick={() => alert("Delete User Account clicked")}
+          >
             Delete User Account
           </button>
           <button className="button cancel" onClick={() => setShowSettings(false)}>
@@ -43,20 +241,146 @@ export default function HwHome({ hw, onLogout }) {
         </div>
       )}
 
-      <div className="menu">
-        <button className="button primary" onClick={handleManagePatients}>
-          Manage Patients' Medication Logs
+      <div className="menu" style={{ marginBottom: 20 }}>
+        <button
+          className={`button primary ${view === "info" ? "active" : ""}`}
+          onClick={() => setView("info")}
+        >
+          Info
         </button>
-        <button className="button primary" onClick={handleReviewSideEffects}>
-          Review Side Effects & Allergies
-        </button>
-        <button className="button primary" onClick={handleManagePrescriptions}>
+        <button
+          className={`button primary ${view === "prescriptions" ? "active" : ""}`}
+          onClick={() => setView("prescriptions")}
+          disabled={addingProfile} // disable if no profile yet
+          title={addingProfile ? "Add your info first" : ""}
+        >
           Manage Prescriptions
         </button>
-        <button className="button primary" onClick={handleViewDonations}>
-          View Donation Requests
-        </button>
       </div>
+
+      {view === "info" && (
+        <>
+          {loadingProfile && <p>Loading profile...</p>}
+          {profileError && <p className="error">{profileError}</p>}
+
+          {!loadingProfile && !addingProfile && hcwProfile && (
+            <div className="hw-profile">
+              <h2>Your Profile</h2>
+              <p><strong>Licence Number:</strong> {hcwProfile.licence_num || hcwProfile.license_num}</p>
+              <p><strong>Specialization:</strong> {hcwProfile.specialization}</p>
+              <p><strong>Institution:</strong> {hcwProfile.institution}</p>
+            </div>
+          )}
+
+          {!loadingProfile && addingProfile && (
+            <form onSubmit={handleProfileSubmit} className="hw-profile-form">
+              <h2>Add Your Healthcare Worker Info</h2>
+              {profileError && <p className="error">{profileError}</p>}
+              <label>
+                Licence Number:
+                <input
+                  name="licence_num"
+                  value={profileForm.licence_num}
+                  onChange={handleProfileChange}
+                  required
+                />
+              </label>
+              <label>
+                Specialization:
+                <input
+                  name="specialization"
+                  value={profileForm.specialization}
+                  onChange={handleProfileChange}
+                  required
+                />
+              </label>
+              <label>
+                Institution:
+                <input
+                  name="institution"
+                  value={profileForm.institution}
+                  onChange={handleProfileChange}
+                  required
+                />
+              </label>
+              <button type="submit" className="button primary">
+                Save Info
+              </button>
+            </form>
+          )}
+        </>
+      )}
+
+      {view === "prescriptions" && (
+        <>
+          {loadingPrescriptions && <p>Loading prescriptions...</p>}
+          {!loadingPrescriptions && (
+            <>
+              <label style={{ marginBottom: 10, display: "block" }}>
+                Filter by User ID:{" "}
+                <input
+                  type="text"
+                  value={filterUserId}
+                  onChange={(e) => setFilterUserId(e.target.value)}
+                  placeholder="Enter user ID"
+                />
+              </label>
+
+              {filteredPrescriptions.length === 0 ? (
+                <p>No prescriptions found.</p>
+              ) : (
+                <ul className="med-list">
+                  {filteredPrescriptions.map((entry) => (
+                    <li key={entry.entry_id} className="med-entry">
+                      <p><strong>Entry ID:</strong> {entry.entry_id}</p>
+                      <p><strong>User ID:</strong> {entry.user_id}</p>
+                      <p><strong>Medication ID:</strong> {entry.med_id}</p>
+                      <p><strong>Prescribed By:</strong> {entry.prescribed_by}</p>
+                      <p><strong>Purchase Date:</strong> {new Date(entry.purchase_date).toLocaleDateString()}</p>
+                      <p><strong>Expiration Date:</strong> {new Date(entry.expiration_date).toLocaleDateString()}</p>
+
+                      <button
+                        className="button small"
+                        onClick={() => toggleSideEffects(entry.entry_id)}
+                      >
+                        Side Effects ({sideEffectsMap[entry.entry_id]?.length || 0})
+                      </button>
+
+                      {selectedEntryId === entry.entry_id && (
+                        <div className="side-effects-popup">
+                          <ul>
+                            {(sideEffectsMap[entry.entry_id] || []).map((se) => (
+                              <li key={se.se_id}>{se.description}</li>
+                            ))}
+                          </ul>
+                          <input
+                            type="text"
+                            placeholder="Add side effect"
+                            value={sideEffectInput}
+                            onChange={handleSideEffectInputChange}
+                          />
+                          <button
+                            className="button small"
+                            onClick={() => handleAddSideEffect(entry.entry_id)}
+                          >
+                            Add
+                          </button>
+                          <button
+                            className="button small cancel"
+                            onClick={() => setSelectedEntryId(null)}
+                          >
+                            Close
+                          </button>
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
+          )}
+        </>
+      )}
     </div>
   );
 }
