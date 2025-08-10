@@ -55,10 +55,13 @@ export default function Login({ onLogin }) {
       }
       const user = await res.json();
       if (user.role === "user") {
-        onLogin(user);          // set logged in user in App.js
-        navigate("/userhome");  // navigate to user home
+        onLogin(user);
+        navigate("/userhome");  // normal user home
+      } else if (user.role === "healthcare_worker") {
+        onLogin(user);
+        navigate("/healthcare");  // healthcare worker home
       } else {
-        setErrorMsg("Only users can access this page");
+        setErrorMsg("Only users and healthcare workers can access this page");  
       }
     } catch (err) {
       setErrorMsg("Network error: " + err.message);
@@ -211,7 +214,7 @@ export default function Login({ onLogin }) {
               >
                 <option value="user">User</option>
                 <option value="caregiver">Caregiver</option>
-                <option value="helathcare_worker">Healthcare Worker</option>
+                <option value="healthcare_worker">Healthcare Worker</option>
                 <option value="donation_center">Donation Center</option>
               </select>
             </label>

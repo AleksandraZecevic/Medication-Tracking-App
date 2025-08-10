@@ -745,8 +745,6 @@ const toggleReminder = async (item) => {
     )}
   </>
 )}
-
-
                     <button
                       className="button small delete-btn"
                       onClick={() => deleteMedEntry(item.entry_id)}
