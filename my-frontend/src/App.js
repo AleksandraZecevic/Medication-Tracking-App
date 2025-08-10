@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import UserHome from "./UserHome";
+import UserHome from "./userPage/UserHome";
 import Login from "./Login";
 
 export default function App() {

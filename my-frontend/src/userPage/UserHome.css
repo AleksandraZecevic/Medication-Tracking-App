@@ -1,0 +1,415 @@
+/* General page styles */
+.page {
+  min-height: 100vh;
+  background-color: #2E7D32; /* calm green */
+  color: #EEE;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding-top: 60px;
+  text-align: center;
+}
+
+/* Title */
+.title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+/* Form container */
+.form-container {
+  background-color: #A5D6A7; /* lighter green */
+  margin: 20px auto 40px;
+  padding: 30px 25px;
+  border-radius: 8px;
+  max-width: 400px;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+  text-align: left;
+  color: #1B5E20;
+}
+
+/* Inputs, selects, and textarea */
+.input {
+  display: block;
+  width: 100%;
+  padding: 12px 10px;
+  margin-bottom: 16px;
+  border-radius: 6px;
+  border: 1px solid #388E3C;
+  font-size: 16px;
+  box-sizing: border-box;
+  font-family: inherit;
+  color: #1B5E20;
+  resize: vertical;
+}
+
+/* Buttons */
+.button {
+  width: 100%;
+  padding: 14px;
+  font-weight: 600;
+  font-size: 18px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color 0.3s ease;
+}
+
+.button.primary {
+  background-color: #1B5E20;
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.button.primary:hover {
+  background-color: #145214;
+}
+
+.button.cancel {
+  background-color: #d32f2f;
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.button.cancel:hover {
+  background-color: #9a2323;
+}
+
+/* Buttons container with spacing */
+.form-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+/* Header and logout */
+.user-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 900px;
+  margin: 0 auto 20px;
+  padding: 0 20px;
+  position: relative;
+  /* add this to ensure absolute positioning works inside */
+}
+
+/* Container for right-side buttons */
+.user-header-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.settings-popup {
+  position: absolute;
+  top: 50px;
+  right: 10px;
+  background: white;
+  border: 1px solid #ccc;
+  padding: 8px;
+  z-index: 100;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+
+/* Menu buttons */
+.menu {
+  max-width: 900px;
+  margin: 20px auto 30px;
+  padding: 0 20px;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.menu-btn {
+  background-color: #1B5E20;
+  border: none;
+  padding: 12px 18px;
+  color: white;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.menu-btn:hover {
+  background-color: #145214;
+}
+
+/* Label styling */
+label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 6px;
+  color: #1B5E20;
+}
+
+/* Paragraph styling */
+p {
+  margin: 0 0 10px 0;
+  font-weight: 600;
+  color: #145214;
+}
+
+/* Shelf container and grid as columns */
+.shelf-container {
+  display: flex;
+  flex-direction: row; /* side by side */
+  gap: 1rem; /* space between columns */
+  flex-wrap: wrap; /* wrap on smaller screens */
+  max-width: 1200px;
+  margin: 0 auto 30px;
+}
+
+.shelf-category {
+  flex: 1 1 22%; /* roughly 4 columns */
+  min-width: 250px; /* ensure reasonable width */
+  border: 1px solid #ccc;
+  padding: 0.5rem;
+  box-sizing: border-box;
+  background: #f9f9f9;
+  border-radius: 4px;
+  color: #1B5E20;  /* FIXED: added # for valid hex color */
+}
+
+/* Also ensure the shelf title is visible */
+.shelf-category > h3 {
+  color: #145214; /* darker green for good contrast */
+  font-weight: 700;
+  margin-bottom: 8px;
+  font-size: 1.2rem;
+  text-align: center;
+}
+
+/* Ensure text inside shelf items is readable */
+.shelf-item,
+.shelf-item div,
+.shelf-item button,
+.side-effects-list,
+.side-effects-list ul,
+.side-effects-list li {
+  color: #1B5E20;
+}
+
+
+.shelf-title {
+  font-weight: 700;
+  margin-bottom: 8px;
+  font-size: 1.2rem;
+  text-align: center;
+}
+
+/* Different border colors for categories */
+.shelf-have {
+  border-color: #388e3c;
+  background: #e6f4e6;
+}
+.shelf-currently {
+  border-color: #2e7d32;
+  background: #c8e6c9;
+}
+.shelf-past {
+  border-color: #7b8d6e;
+  background: #dee5d9;
+}
+.shelf-unused {
+  border-color: #8c8c8c;
+  background: #f0f0f0;
+}
+.shelf-donation {
+  border-color: #d32f2f;
+  background: #fce4e4;
+}
+
+/* Medication card */
+.med-card {
+  background: white;
+  padding: 8px;
+  margin: 6px 0;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  cursor: grab;
+  font-size: 0.9rem;
+  user-select: none;
+}
+
+.med-card:active {
+  cursor: grabbing;
+}
+
+/* Prevent drag cursor on donation box items */
+.shelf-donation .med-card {
+  cursor: default;
+}
+
+.shelf-item {
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+  padding: 8px;
+  border-radius: 6px;
+  background: white;
+}
+
+.drag-handle {
+  cursor: grab;
+  user-select: none;
+  padding: 6px;
+  background: #eef6f9;
+  border-radius: 4px;
+}
+
+.item-buttons {
+  margin-top: 5px;
+  display: flex;
+  gap: 8px;
+}
+
+.button.small {
+  padding: 4px 10px;
+  font-size: 0.85rem;
+  width: auto;
+}
+
+.side-effects-list {
+  margin-top: 10px;
+  background: #f9f9f9;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+/* --- Improved Medication List Styling --- */
+.medications-list {
+  background-color: #fff; /* white background for readability */
+  padding: 20px 25px;
+  border-radius: 10px;
+  margin-top: 25px;
+  color: #222;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.medication-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 10px;
+  border-bottom: 1px solid #ddd;
+  transition: background-color 0.3s ease;
+  cursor: default;
+}
+
+.medication-item:hover {
+  background-color: #f0f8ff;
+}
+
+.medication-item > div {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #2e7d32; /* calm green text */
+}
+
+.button.delete-btn {
+  background-color: #e53935; /* softer red */
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: background-color 0.25s ease;
+  user-select: none;
+}
+
+.button.delete-btn:hover {
+  background-color: #ab2723;
+}
+
+.input.search-med-id {
+  border: 1px solid #388e3c; /* green border */
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 1rem;
+  max-width: 300px;
+  margin: 0 auto 15px;
+  display: block;
+  box-sizing: border-box;
+  color: #1b5e20;
+  font-weight: 600;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.reminder-popup {
+  position: absolute;
+  top: 50px;
+  right: 10px;
+  width: 25vw; /* about 1/4 of viewport width */
+  background: #f9f9f9;
+  border: 1px solid #ccc;
+  padding: 16px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 1000;
+  border-radius: 8px;
+  color: #1B5E20;
+  font-weight: 600;
+}
+
+.reminder-popup label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+}
+
+.reminder-popup input[type="time"],
+.reminder-popup input[type="text"] {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #388E3C;
+  font-size: 1rem;
+  margin-top: 4px;
+  color: #1B5E20;
+}
+
+.reminder-popup .form-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .shelf-category {
+    flex: 1 1 45%;
+  }
+}
+
+@media (max-width: 480px) {
+  .shelf-category {
+    flex: 1 1 100%;
+  }
+
+  .medication-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .button.delete-btn {
+    align-self: flex-end;
+  }
+}

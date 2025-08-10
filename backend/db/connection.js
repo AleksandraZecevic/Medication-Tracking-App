@@ -157,10 +157,10 @@ dataPool.createMedication = (medication) => {
     }
 
     // Check for duplicate med_id
-    db.query('SELECT med_id FROM Medication WHERE med_id = ?', [med_id], (err, results) => {
+    db.query('SELECT med_id FROM Medication WHERE med_id = ? OR name = ?', [med_id, name], (err, results) => {
       if (err) return reject(err);
       if (results.length > 0) {
-        return reject(new Error("Medication ID already exists"));
+        return reject(new Error("Medication ID or name already exists"));
       }
 
       db.query(
@@ -557,7 +557,7 @@ dataPool.updateMedEntry = async (entry_id, medE) => {
   }
 };
 
-dataPool.deleteMedication = (id) => {
+dataPool.deleteMedEntry = (id) => {
   return new Promise((resolve, reject) => {
     db.query('DELETE FROM `Medication Entry` WHERE entry_id = ?', [id], (err, res) => {
       if (err) return reject(err);
@@ -599,6 +599,16 @@ dataPool.getAllReminders = () => {
     });
   });
 };
+
+dataPool.getMaxRemId = () => {
+  return new Promise((resolve, reject) => {
+    db.query('SELECT MAX(rem_id) AS maxId FROM Reminder', (err, results) => {
+      if (err) return reject(err);
+      resolve(results[0].maxId);
+    });
+  });
+};
+
 
 dataPool.getNextRemId = () => {
   return new Promise((resolve, reject) => {
@@ -647,6 +657,25 @@ dataPool.updateReminder = async (rem_id, reminderData) => {
     reminderData
   );
 };
+
+dataPool.getRemindersByEntryId = (entry_id) => {
+  return new Promise((resolve, reject) => {
+    db.query('SELECT * FROM Reminder WHERE entry_id = ?', [entry_id], (err, res) => {
+      if (err) return reject(err);
+      resolve(res);
+    });
+  });
+};
+
+dataPool.deleteRemindersByEntryId = (entry_id) => {
+  return new Promise((resolve, reject) => {
+    db.query("DELETE FROM Reminder WHERE entry_id = ?", [entry_id], (err, res) => {
+      if (err) return reject(err);
+      resolve(res);
+    });
+  });
+};
+
 
 // INTAKE LOG -------------------------------------------------------------------------------------------------------------
 // INTAKE LOG -------------------------------------------------------------------------------------------------------------

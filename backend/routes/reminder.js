@@ -7,6 +7,18 @@ const urlencodedParser = bodyParser.urlencoded({ extended: false });
 reminder.use(bodyParser.json());
 reminder.use(urlencodedParser);
 
+// get next ID
+reminder.get('/nextid', async (req, res) => {
+  try {
+    const maxId = await DB.getMaxRemId();
+    const nextId = (maxId || 0) + 1;
+    res.json({ nextId });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // GET all reminders
 reminder.get("/", async (req, res) => {
   try {
@@ -84,5 +96,36 @@ reminder.put('/:id', urlencodedParser, async (req, res) => {
     res.status(500).json({ error: err.message || 'Internal Server Error' });
   }
 });
+
+// GET reminders by medication entry_id
+reminder.get('/entry/:entry_id', async (req, res) => {
+  const entry_id = parseInt(req.params.entry_id, 10);
+  if (isNaN(entry_id)) {
+    return res.status(400).json({ error: "Invalid entry_id" });
+  }
+  try {
+    const reminders = await DB.getRemindersByEntryId(entry_id);
+    res.json(reminders);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE all reminders for a given entry_id
+reminder.delete("/entry/:entry_id", async (req, res) => {
+  const entry_id = parseInt(req.params.entry_id, 10);
+  if (isNaN(entry_id)) {
+    return res.status(400).json({ error: "Invalid entry_id" });
+  }
+
+  try {
+    await DB.deleteRemindersByEntryId(entry_id);
+    res.json({ message: `Deleted all reminders for entry_id ${entry_id}` });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 
 module.exports = reminder;
