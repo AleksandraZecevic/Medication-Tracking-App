@@ -60,8 +60,11 @@ export default function Login({ onLogin }) {
       } else if (user.role === "healthcare_worker") {
         onLogin(user);
         navigate("/healthcare");  // healthcare worker home
+      }else if (user.role === "caregiver"){
+        onLogin(user);
+        navigate("/caregiver"); 
       } else {
-        setErrorMsg("Only users and healthcare workers can access this page");  
+        setErrorMsg("Donation center page is at work right now");  
       }
     } catch (err) {
       setErrorMsg("Network error: " + err.message);

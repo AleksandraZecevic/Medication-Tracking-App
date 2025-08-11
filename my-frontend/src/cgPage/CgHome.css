@@ -1,0 +1,262 @@
+.page {
+  min-height: 100vh;
+  background-color: #2E7D32; 
+  color: #EEE;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding-top: 60px;
+  text-align: center;
+}
+
+.cg-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 900px;
+  margin: 0 auto 20px;
+  padding: 0 20px;
+  position: relative;
+  border-bottom: 2px solid #145214;
+}
+
+.cg-header .title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: #dff0d8;
+}
+
+.user-header-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.button {
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.3s ease;
+}
+
+.button.settings {
+  background-color: #1B5E20;
+  color: #fff;
+}
+
+.button.settings:hover {
+  background-color: #145214;
+}
+
+.button.logout {
+  background-color: #d32f2f;
+  color: white;
+}
+
+.button.logout:hover {
+  background-color: #9a2323;
+}
+
+.settings-modal {
+  background: white;
+  padding: 25px 30px;
+  border-radius: 10px;
+  max-width: 400px;
+  margin: 0 auto 30px;
+  color: #222;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.settings-modal h3 {
+  margin-bottom: 15px;
+  color: #2E7D32;
+  font-weight: 700;
+  font-size: 1.8rem;
+}
+
+.settings-modal input {
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+  color: #222;
+  outline-offset: 2px;
+}
+
+.settings-modal input:focus {
+  border-color: #2E7D32;
+  box-shadow: 0 0 5px #2E7D32;
+}
+
+.settings-modal button {
+  padding: 12px 0;
+  font-weight: 700;
+  font-size: 16px;
+  border-radius: 6px;
+}
+
+.settings-modal button:hover {
+  opacity: 0.9;
+}
+
+.settings-modal button.delete-btn {
+  background-color: #d32f2f;
+  color: white;
+  margin-top: 20px;
+}
+
+.settings-modal button.delete-btn:hover {
+  background-color: #9a2323;
+}
+
+.settings-modal button.cancel {
+  background-color: #aaa;
+  color: #222;
+}
+
+.settings-modal button.cancel:hover {
+  background-color: #888;
+}
+
+.menu {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.menu .button.primary {
+  background-color: #059605;
+  color: white;
+  padding: 14px 24px;
+  font-weight: 700;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  min-width: 180px;
+  max-width: 220px;
+  transition: background-color 0.2s ease;
+}
+
+.menu .button.primary:hover {
+  background-color: #059669;
+}
+
+.menu .button.primary.active {
+  background-color: #145214;
+}
+
+.menu .button.primary:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  color: #666;
+}
+
+.hw-profile {
+  background: #e8f5e9;
+  color: #2E7D32;
+  max-width: 400px;
+  margin: 0 auto 30px;
+  padding: 20px 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(46, 125, 50, 0.3);
+  text-align: left;
+}
+
+.hw-profile h2 {
+  font-weight: 700;
+  margin-bottom: 15px;
+}
+
+.hw-profile p {
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.hw-profile strong {
+  color: #145214;
+}
+
+.hw-profile-form {
+  max-width: 400px;
+  margin: 0 auto 30px;
+  background: #f1f8e9;
+  padding: 20px 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(46, 125, 50, 0.2);
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hw-profile-form label {
+  font-weight: 600;
+  color: #2E7D32;
+  font-size: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hw-profile-form input {
+  padding: 8px 10px;
+  border: 1px solid #8bc34a;
+  border-radius: 6px;
+  font-size: 16px;
+  outline-offset: 2px;
+  color: #222;
+}
+
+.hw-profile-form input:focus {
+  border-color: #689f38;
+  box-shadow: 0 0 5px #689f38;
+}
+
+.hw-profile-form button {
+  background-color: #2E7D32;
+  color: white;
+  padding: 12px 0;
+  font-weight: 700;
+  font-size: 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.hw-profile-form button:hover {
+  background-color: #1b5e20;
+}
+
+.error {
+  color: #d32f2f;
+  font-weight: 700;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+@media (max-width: 480px) {
+  .settings-modal,
+  .hw-profile,
+  .hw-profile-form {
+    width: 90%;
+    margin: 0 auto 20px;
+  }
+
+  .cg-header {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .user-header-buttons {
+    justify-content: center;
+  }
+}

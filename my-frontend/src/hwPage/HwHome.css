@@ -21,6 +21,7 @@
   margin: 0 auto 20px;
   padding: 0 20px;
   position: relative;
+  border-bottom: 2px solid #145214;
 }
 
 .user-header-buttons {
@@ -52,6 +53,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  color: #222;
 }
 .settings-modal input {
   padding: 6px;
@@ -131,7 +133,7 @@
   border: 1px solid #90caf9; /* blue border */
   border-radius: 8px;
   padding: 16px;
-  width: 300px; /* fixed width box */
+  width: 300px; 
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   display: flex;
   flex-direction: column;

@@ -2,6 +2,7 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import UserHome from "./userPage/UserHome";
 import HwHome from "./hwPage/HwHome";
+import CgHome from "./cgPage/CgHome";
 import Login from "./Login";
 
 export default function App() {
@@ -25,6 +26,16 @@ export default function App() {
         element={
           loggedInUser && loggedInUser.role === "healthcare_worker" ? (
             <HwHome hw={loggedInUser} onLogout={() => setLoggedInUser(null)} />
+          ) : (
+            <Navigate to="/" />
+          )
+        }
+      />
+       <Route
+        path="/caregiver"
+        element={
+          loggedInUser && loggedInUser.role === "caregiver" ? (
+            <CgHome cg={loggedInUser} onLogout={() => setLoggedInUser(null)} />
           ) : (
             <Navigate to="/" />
           )

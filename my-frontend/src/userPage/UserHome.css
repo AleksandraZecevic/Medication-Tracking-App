@@ -91,7 +91,7 @@
   margin: 0 auto 20px;
   padding: 0 20px;
   position: relative;
-  /* add this to ensure absolute positioning works inside */
+  border-bottom: 2px solid #145214;
 }
 
 /* Container for right-side buttons */
@@ -113,6 +113,29 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+.settings-modal {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 350px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #222;
+}
+.settings-modal input {
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+.settings-modal button {
+  padding: 8px;
+  margin-top: 5px;
+  border: none;
+  cursor: pointer;
 }
 
 
@@ -175,12 +198,11 @@ p {
   box-sizing: border-box;
   background: #f9f9f9;
   border-radius: 4px;
-  color: #1B5E20;  /* FIXED: added # for valid hex color */
+  color: #1B5E20; 
 }
 
-/* Also ensure the shelf title is visible */
 .shelf-category > h3 {
-  color: #145214; /* darker green for good contrast */
+  color: #145214; 
   font-weight: 700;
   margin-bottom: 8px;
   font-size: 1.2rem;
@@ -284,9 +306,8 @@ p {
   font-size: 0.9rem;
 }
 
-/* --- Improved Medication List Styling --- */
 .medications-list {
-  background-color: #fff; /* white background for readability */
+  background-color: #fff;
   padding: 20px 25px;
   border-radius: 10px;
   margin-top: 25px;

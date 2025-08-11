@@ -29,6 +29,14 @@ export default function HwHome({ hw, onLogout }) {
   const [selectedEntryId, setSelectedEntryId] = useState(null);
   const [sideEffectInput, setSideEffectInput] = useState("");
 
+  // for updating
+  const [editName, setEditName] = useState(hw.name || "");
+  const [editLastname, setEditLastname] = useState(hw.lastname || "");
+  const [editEmail, setEditEmail] = useState(hw.email || "");
+  const [editPassword, setEditPassword] = useState(""); // optional if not changing password
+  const [editRole, setEditRole] = useState(hw.role || "");
+  const [editLanguage, setEditLanguage] = useState(hw.language_pref || "");
+
   // Fetch healthcare worker profile on mount or when hw.user_id changes
   useEffect(() => {
     setLoadingProfile(true);
@@ -212,6 +220,56 @@ function handleAddSideEffect(entry_id) {
       .finally(() => setLoadingProfile(false));
   }
 
+  const handleDeleteUser = async () => {
+  if (!window.confirm("Are you sure you want to DELETE your account? This action cannot be undone.")) return;
+
+  try {
+    const res = await fetch(`http://88.200.63.148:2004/user/${hw.user_id}`, {
+      method: "DELETE",
+    });
+    if (res.ok) {
+      alert("User account deleted. Logging out.");
+      setShowSettings(false);
+      onLogout();
+    } else {
+      alert("Failed to delete user.");
+    }
+  } catch (err) {
+    alert("Error deleting user: " + err.message);
+  }
+};
+
+  const handleUpdateUser = async () => {
+  const updatedUser = {
+    name: editName,
+    lastname: editLastname,
+    email: editEmail,
+    password: editPassword || hw.password, // keep old password if unchanged
+    role: editRole,
+    language_pref: editLanguage
+  };
+
+  try {
+    const res = await fetch(`http://88.200.63.148:2004/user/${hw.user_id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updatedUser)
+    });
+
+    if (res.ok) {
+      const result = await res.json();
+      alert("User updated successfully!");
+      console.log("Updated user:", result);
+      setShowSettings(false);
+    } else {
+      const errMsg = await res.text();
+      alert(`Failed to update user: ${errMsg}`);
+    }
+  } catch (err) {
+    alert("Error updating user: " + err.message);
+  }
+};
+
   return (
     <div className="page hw-home">
       <div className="hw-header user-header">
@@ -230,23 +288,59 @@ function handleAddSideEffect(entry_id) {
       </div>
 
       {showSettings && (
-        <div className="settings-popup">
-          <button
-            className="button"
-            onClick={() => alert("Update User Info clicked")}
-          >
-            Update User Info
-          </button>
-          <button
-            className="button delete-btn"
-            onClick={() => alert("Delete User Account clicked")}
-          >
-            Delete User Account
-          </button>
-          <button className="button cancel" onClick={() => setShowSettings(false)}>
-            Close
-          </button>
-        </div>
+  <div className="settings-modal">
+    <h3>Update Account</h3>
+    <input
+      type="text"
+      value={editName}
+      onChange={(e) => setEditName(e.target.value)}
+      placeholder="First Name"
+    />
+    <input
+      type="text"
+      value={editLastname}
+      onChange={(e) => setEditLastname(e.target.value)}
+      placeholder="Last Name"
+    />
+    <input
+      type="email"
+      value={editEmail}
+      onChange={(e) => setEditEmail(e.target.value)}
+      placeholder="Email"
+    />
+    <input
+      type="password"
+      value={editPassword}
+      onChange={(e) => setEditPassword(e.target.value)}
+      placeholder="New Password (optional)"
+    />
+    <input
+      type="text"
+      value={editRole}
+      onChange={(e) => setEditRole(e.target.value)}
+      placeholder="Role"
+    />
+    <input
+      type="text"
+      value={editLanguage}
+      onChange={(e) => setEditLanguage(e.target.value)}
+      placeholder="Language"
+    />
+
+    <button onClick={handleUpdateUser}>Save Changes</button>
+    <button onClick={() => setShowSettings(false)}>Cancel</button>
+
+    <hr />
+
+    <button className="button delete-btn" onClick={handleDeleteUser}>
+      Delete User Account
+    </button>
+
+     <button className="button cancel" onClick={() => setShowSettings(false)}>
+      Close
+    </button>
+        
+  </div>
       )}
 
       <div className="menu" style={{ marginBottom: 20 }}>
