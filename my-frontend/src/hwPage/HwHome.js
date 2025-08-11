@@ -37,42 +37,84 @@ export default function HwHome({ hw, onLogout }) {
   const [editRole, setEditRole] = useState(hw.role || "");
   const [editLanguage, setEditLanguage] = useState(hw.language_pref || "");
 
-  // Fetch healthcare worker profile on mount or when hw.user_id changes
-  useEffect(() => {
-    setLoadingProfile(true);
-    setProfileError("");
-    fetch(`${API_URL}/healthcareWorker/${hw.user_id}`)
-      .then(async (res) => {
-        if (res.status === 404) {
-          setHcwProfile(null);
-          setAddingProfile(true);
-          setLoadingProfile(false);
-          return null;
-        }
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(text || "Failed to fetch profile");
-        }
-        return res.json();
-      })
-      .then((data) => {
-        if (data) {
-          setHcwProfile(data);
-          setProfileForm({
-            licence_num: data.licence_num || data.license_num || "",
-            specialization: data.specialization || "",
-            institution: data.institution || "",
-          });
-          setAddingProfile(false);
-        }
-      })
-      .catch((err) => {
-        setProfileError("Error loading profile: " + err.message);
+  const [updateHW, setUpdateHW] = useState(false);
+  const [formData, setFormData] = useState({
+  licence_num: '',
+  specialization: '',
+  institution: '',
+});
+
+const handleUpdate = async (e) => {
+  e.preventDefault();
+
+  const updates = {};
+
+    if (formData.licence_num.trim() !== "") updates.licence_num = formData.licence_num;
+    if (formData.specialization.trim() !== "") updates.specialization = formData.specialization;
+    if (formData.institution.trim() !== "") updates.institution = formData.institution;
+
+  try {
+    const res = await fetch(`${API_URL}/healthcareWorker/${hw.user_id}`, {
+      method: 'PUT', // keep PUT since backend expects it
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates),
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      alert("Update failed: " + err.error);
+      return;
+    }
+
+    setUpdateHW(false);
+    fetchHcwProfile();
+    alert("Healthcare worker updated!");
+
+  } catch (error) {
+    alert("Update error: " + error.message);
+  }
+};
+
+  const fetchHcwProfile = () => {
+  setLoadingProfile(true);
+  setProfileError("");
+  fetch(`${API_URL}/healthcareWorker/${hw.user_id}`)
+    .then(async (res) => {
+      if (res.status === 404) {
         setHcwProfile(null);
         setAddingProfile(true);
-      })
-      .finally(() => setLoadingProfile(false));
-  }, [hw.user_id]);
+        setLoadingProfile(false);
+        return null;
+      }
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || "Failed to fetch profile");
+      }
+      return res.json();
+    })
+    .then((data) => {
+      if (data) {
+        setHcwProfile(data);
+        setProfileForm({
+          licence_num: data.licence_num || data.license_num || "",
+          specialization: data.specialization || "",
+          institution: data.institution || "",
+        });
+        setAddingProfile(false);
+      }
+    })
+    .catch((err) => {
+      setProfileError("Error loading profile: " + err.message);
+      setHcwProfile(null);
+      setAddingProfile(true);
+    })
+    .finally(() => setLoadingProfile(false));
+};
+
+// run on mount or user_id change
+useEffect(() => {
+  fetchHcwProfile();
+}, [hw.user_id]);
 
   // Fetch prescriptions when switching to "prescriptions" view or after profile is loaded
   useEffect(() => {
@@ -127,9 +169,6 @@ function fetchSideEffects(entry_id) {
       setSideEffectsMap((prev) => ({ ...prev, [entry_id]: [] }));
     });
 }
-
-
-
   // Toggle side effects popup for an entry
   function toggleSideEffects(entry_id) {
     if (selectedEntryId === entry_id) {
@@ -270,6 +309,9 @@ function handleAddSideEffect(entry_id) {
   }
 };
 
+
+// RETURN ----------------------------------
+// --------------------------------------------
   return (
     <div className="page hw-home">
       <div className="hw-header user-header">
@@ -371,8 +413,52 @@ function handleAddSideEffect(entry_id) {
               <p><strong>Licence Number:</strong> {hcwProfile.licence_num || hcwProfile.license_num}</p>
               <p><strong>Specialization:</strong> {hcwProfile.specialization}</p>
               <p><strong>Institution:</strong> {hcwProfile.institution}</p>
+              <button onClick={() => setUpdateHW(true)} className="button primary">Update info</button>
             </div>
           )}
+
+          {updateHW && (
+      <form
+        className="hw-profile-form"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          setUpdateHW(false);
+        }}
+      >
+        <label>
+          Licence Number:
+          <input
+            type="text"
+            value={formData.licence_num}
+            onChange={(e) => setFormData({ ...formData, licence_num: e.target.value })}
+          />
+        </label>
+        <label>
+          Specialization:
+          <input
+            type="text"
+            value={formData.specialization}
+            onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
+          />
+        </label>
+        <label>
+          Institution:
+          <input
+            type="text"
+            value={formData.institution}
+            onChange={(e) => setFormData({ ...formData, institution: e.target.value })}
+          />
+        </label>
+
+        <div className="form-buttons">
+          <button onClick={handleUpdate} type="submit" className="button primary" >Save</button>
+          <button
+            type="button"
+            className="button cancel"
+            onClick={() => setUpdateHW(false)}>Cancel</button>
+        </div>
+      </form>
+    )}
 
           {!loadingProfile && addingProfile && (
             <form onSubmit={handleProfileSubmit} className="hw-profile-form">
@@ -412,6 +498,7 @@ function handleAddSideEffect(entry_id) {
           )}
         </>
       )}
+      {}
 
       {view === "prescriptions" && (
         <>

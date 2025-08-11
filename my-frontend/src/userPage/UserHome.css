@@ -69,13 +69,13 @@ body{
 }
 
 .button.cancel {
-  background-color: #00A896;
+  background-color: #f07873;
   color: #00A896;
   margin-bottom: 12px;
 }
 
 .button.cancel:hover {
-  background-color: #f07873;
+  background-color: #f55953;
 }
 
 /* Buttons container with spacing */
