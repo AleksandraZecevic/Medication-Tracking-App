@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import UserHome from "./userPage/UserHome";
 import HwHome from "./hwPage/HwHome";
 import CgHome from "./cgPage/CgHome";
+import DcHome from "./dcPage/DcHome";
 import Login from "./Login";
 
 export default function App() {
@@ -36,6 +37,16 @@ export default function App() {
         element={
           loggedInUser && loggedInUser.role === "caregiver" ? (
             <CgHome cg={loggedInUser} onLogout={() => setLoggedInUser(null)} />
+          ) : (
+            <Navigate to="/" />
+          )
+        }
+      />
+      <Route
+        path="/donationcenter"
+        element={
+          loggedInUser && loggedInUser.role === "donation_center" ? (
+            <DcHome dc={loggedInUser} onLogout={() => setLoggedInUser(null)} />
           ) : (
             <Navigate to="/" />
           )

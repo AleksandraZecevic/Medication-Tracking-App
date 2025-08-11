@@ -63,8 +63,11 @@ export default function Login({ onLogin }) {
       }else if (user.role === "caregiver"){
         onLogin(user);
         navigate("/caregiver"); 
-      } else {
-        setErrorMsg("Donation center page is at work right now");  
+      } else if(user.role === "donation_center"){
+        onLogin(user);
+        navigate("/donationcenter"); 
+      }else{
+        setErrorMsg("You got something wrong");  
       }
     } catch (err) {
       setErrorMsg("Network error: " + err.message);

@@ -357,7 +357,7 @@ useEffect(() => {
 
     {view === "prescriptions" && (
       <div>
-        {/* Your Manage Patients UI or component here */}
+   
         <p>Manage Patients view coming soon...</p>
       </div>
     )}
