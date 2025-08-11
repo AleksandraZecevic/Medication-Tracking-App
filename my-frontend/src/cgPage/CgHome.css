@@ -1,7 +1,7 @@
 .page {
   min-height: 100vh;
-  background-color: #2E7D32; 
-  color: #EEE;
+  background-color: #e2fee2; /* pale yellow */
+  color: #05668D; /* dark blue text */
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   padding-top: 60px;
   text-align: center;
@@ -15,14 +15,14 @@
   margin: 0 auto 20px;
   padding: 0 20px;
   position: relative;
-  border-bottom: 2px solid #145214;
+  border-bottom: 3px solid #028090; /* blue-green */
 }
 
 .cg-header .title {
   font-size: 3.5rem;
   font-weight: 700;
   margin-bottom: 4px;
-  color: #dff0d8;
+  color: #05668D; /* dark blue */
 }
 
 .user-header-buttons {
@@ -42,31 +42,31 @@
 }
 
 .button.settings {
-  background-color: #1B5E20;
-  color: #fff;
+  background-color: #028090; /* blue-green */
+  color: #F0F3BD; /* pale text */
 }
 
 .button.settings:hover {
-  background-color: #145214;
+  background-color: #00A896; /* turquoise */
 }
 
 .button.logout {
-  background-color: #d32f2f;
-  color: white;
+  background-color: #ffa69e; /* soft coral */
+  color: #05668D; /* dark blue text */
 }
 
 .button.logout:hover {
-  background-color: #9a2323;
+  background-color: #f07873; /* darker coral */
 }
 
 .settings-modal {
-  background: white;
+  background: #fff;
   padding: 25px 30px;
   border-radius: 10px;
   max-width: 400px;
   margin: 0 auto 30px;
-  color: #222;
-  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+  color: #05668D;
+  box-shadow: 0 6px 12px rgba(5, 102, 141, 0.2);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -74,14 +74,14 @@
 
 .settings-modal h3 {
   margin-bottom: 15px;
-  color: #2E7D32;
+  color: #028090;
   font-weight: 700;
   font-size: 1.8rem;
 }
 
 .settings-modal input {
   padding: 8px 10px;
-  border: 1px solid #ccc;
+  border: 1px solid #02C39A; /* light turquoise */
   border-radius: 6px;
   font-size: 16px;
   color: #222;
@@ -89,8 +89,8 @@
 }
 
 .settings-modal input:focus {
-  border-color: #2E7D32;
-  box-shadow: 0 0 5px #2E7D32;
+  border-color: #00A896;
+  box-shadow: 0 0 5px #00A896;
 }
 
 .settings-modal button {
@@ -105,22 +105,22 @@
 }
 
 .settings-modal button.delete-btn {
-  background-color: #d32f2f;
-  color: white;
+  background-color: #ffa69e;
+  color: #05668D;
   margin-top: 20px;
 }
 
 .settings-modal button.delete-btn:hover {
-  background-color: #9a2323;
+  background-color: #f07873;
 }
 
 .settings-modal button.cancel {
-  background-color: #aaa;
-  color: #222;
+  background-color: #f0c1b8; /* softer coral */
+  color: #05668D;
 }
 
 .settings-modal button.cancel:hover {
-  background-color: #888;
+  background-color: #e79a8f;
 }
 
 .menu {
@@ -132,7 +132,7 @@
 }
 
 .menu .button.primary {
-  background-color: #059605;
+  background-color: #00A896; /* turquoise */
   color: white;
   padding: 14px 24px;
   font-weight: 700;
@@ -145,11 +145,11 @@
 }
 
 .menu .button.primary:hover {
-  background-color: #059669;
+  background-color: #02C39A; /* light turquoise */
 }
 
 .menu .button.primary.active {
-  background-color: #145214;
+  background-color: #028090; /* blue-green */
 }
 
 .menu .button.primary:disabled {
@@ -159,13 +159,13 @@
 }
 
 .hw-profile {
-  background: #e8f5e9;
-  color: #2E7D32;
+  background: #F0F3BD; /* pale yellow */
+  color: #05668D; /* dark blue */
   max-width: 400px;
   margin: 0 auto 30px;
   padding: 20px 25px;
   border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(46, 125, 50, 0.3);
+  box-shadow: 0 4px 8px rgba(2, 195, 154, 0.3);
   text-align: left;
 }
 
@@ -181,16 +181,16 @@
 }
 
 .hw-profile strong {
-  color: #145214;
+  color: #028090;
 }
 
 .hw-profile-form {
   max-width: 400px;
   margin: 0 auto 30px;
-  background: #f1f8e9;
+  background: #e0f7f5; /* very pale turquoise */
   padding: 20px 25px;
   border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(46, 125, 50, 0.2);
+  box-shadow: 0 4px 8px rgba(2, 195, 154, 0.2);
   text-align: left;
   display: flex;
   flex-direction: column;
@@ -199,7 +199,7 @@
 
 .hw-profile-form label {
   font-weight: 600;
-  color: #2E7D32;
+  color: #05668D;
   font-size: 1rem;
   display: flex;
   flex-direction: column;
@@ -208,7 +208,7 @@
 
 .hw-profile-form input {
   padding: 8px 10px;
-  border: 1px solid #8bc34a;
+  border: 1px solid #02C39A;
   border-radius: 6px;
   font-size: 16px;
   outline-offset: 2px;
@@ -216,12 +216,12 @@
 }
 
 .hw-profile-form input:focus {
-  border-color: #689f38;
-  box-shadow: 0 0 5px #689f38;
+  border-color: #00A896;
+  box-shadow: 0 0 5px #00A896;
 }
 
 .hw-profile-form button {
-  background-color: #2E7D32;
+  background-color: #028090;
   color: white;
   padding: 12px 0;
   font-weight: 700;
@@ -233,11 +233,11 @@
 }
 
 .hw-profile-form button:hover {
-  background-color: #1b5e20;
+  background-color: #05668D;
 }
 
 .error {
-  color: #d32f2f;
+  color: #ffa69e;
   font-weight: 700;
   margin-bottom: 10px;
   text-align: center;

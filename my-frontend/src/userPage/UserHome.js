@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import "./UserHome.css";
 import AddMedicationForm from "./AddMedicationForm";
 import AddMedicationEntryForm from "./AddMedicationEntryForm";
+const API_URL = process.env.REACT_APP_API_URL || "http://88.200.63.148:2004";
+
 
 export default function UserHome({ user, onLogout }) {
  
@@ -9,6 +11,7 @@ export default function UserHome({ user, onLogout }) {
   const [healthcareWorkers, setHealthcareWorkers] = useState([]);
   const [showForm, setShowForm] = useState(null);
   const [showView, setShowView] = useState("shelf");
+   const [showSettings, setShowSettings] = useState(false);
 
   const [newMed, setNewMed] = useState({
     med_id: "",
@@ -67,28 +70,15 @@ export default function UserHome({ user, onLogout }) {
   const [editRole, setEditRole] = useState(user.role || "");
   const [editLanguage, setEditLanguage] = useState(user.language_pref || "");
 
-  const fetchReminders = async (entry_id) => {
-    try {
-      const res = await fetch(`http://88.200.63.148:2004/reminder/entry/${entry_id}`);
-      const data = await res.json();
-      setRemindersForEntry(prev => ({ ...prev, [entry_id]: data }));
-    } catch (e) {
-      alert("Failed to load reminders: " + e.message);
-    }
-  };
-
-  // Function to set a reminder (POST to /reminder)
-const setReminder = async (item, time, note) => {
+ const setReminder = async (item, time, note) => {
   try {
-    // Get next available rem_id
-    const nextIdRes = await fetch("http://88.200.63.148:2004/reminder/nextid");
-    if (!nextIdRes.ok) {
-      throw new Error("Failed to get next reminder ID");
-    }
-    const { nextId } = await nextIdRes.json();
+    // Get next reminder ID first
+    const resNextId = await fetch(`${API_URL}/reminder/nextid`);
+    if (!resNextId.ok) throw new Error("Failed to get next reminder ID");
+    const { nextId } = await resNextId.json();
 
-    // Create reminder with nextId, entry_id, time, and note
-    const createRes = await fetch("http://88.200.63.148:2004/reminder", {
+    // POST the reminder with rem_id, entry_id, time, note
+    const res = await fetch(`${API_URL}/reminder`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -99,19 +89,33 @@ const setReminder = async (item, time, note) => {
       }),
     });
 
-    if (createRes.ok) {
-      alert("Reminder set!");
-      refreshMedData(); // refresh your data after creation
-    } else {
-      const errorData = await createRes.json();
-      alert("Failed to set reminder: " + (errorData.error || createRes.statusText));
+    if (!res.ok) {
+      const errData = await res.json();
+      throw new Error(errData.error || "Failed to set reminder");
     }
+
+    // Update local reminder state
+    setReminder((prev) => ({
+      ...prev,
+      [item.entry_id]: [...(prev[item.entry_id] || []), { rem_id: nextId, time, note }],
+    }));
+
+    // Move from 'have' to 'currently' if needed
+    setShelf((prev) => {
+      if (prev.currently.some((e) => e.entry_id === item.entry_id)) return prev;
+      return {
+        ...prev,
+        have: prev.have.filter((e) => e.entry_id !== item.entry_id),
+        currently: [...prev.currently, item],
+      };
+    });
+   
+    alert("Reminder set!"); 
+
   } catch (err) {
-    alert("Error: " + err.message);
+    alert("Failed to set reminder: " + err.message);
   }
 };
-
-  const [showSettings, setShowSettings] = useState(false);
 
   const handleDeleteUser = async () => {
   if (!window.confirm("Are you sure you want to DELETE your account? This action cannot be undone.")) return;
@@ -491,15 +495,33 @@ const handleUpdateUser = async () => {
     }
     // Rules for moving from "have"
     if (sourceCategory === "have") {
-      if (targetCategory === "past") {
-        alert("Can only move 'Have' items to 'Currently Using' or 'For Donation'.");
-        return;
+      if (targetCategory !== "currently") {
+        const entryId = item.entryId || item.entry_id;  // adjust according to your data
+
+        if (entryId) {
+        // Remove reminder from local state
+          setReminder((prev) => {
+          const copy = { ...prev };
+          delete copy[entryId];
+          return copy;
+          });
+
+        // Remove reminders in backend
+        fetch(`http://88.200.63.148:2004/reminder/entry/${entryId}`, {
+          method: "DELETE",
+        }).catch((err) => {
+          console.error("Failed to delete reminders on server:", err);
+        });
+      } else {
+        console.warn("No valid entryId found on item, skipping reminder deletion");
       }
     }
+  }
+
     if (sourceCategory === targetCategory) return;
 
-    if(targetCategory !== "have"){
-      deleteRemindersForEntry(item.entryId);
+    if(targetCategory !== "currently"){
+      deleteRemindersForEntry(item.entry_id);
     }
 
     // Update donation_status based on category
@@ -565,28 +587,6 @@ const handleUpdateUser = async () => {
       alert("Error: " + err.message);
     }
   };
-
-  // Toggle reminder - here simulated by adding a dummy side effect
- // Function to toggle/show reminders (fetch & display)
-const toggleReminder = async (item) => {
-  const entry_id = item.entry_id;
-  if (visibleRemindersEntry === entry_id) {
-    setVisibleRemindersEntry(null);
-  } else {
-    if (!remindersForEntry[entry_id]) {
-      try {
-        const res = await fetch(`http://88.200.63.148:2004/reminder/entry/${entry_id}`);
-        if (!res.ok) throw new Error("Failed to fetch reminders");
-        const data = await res.json();
-        setRemindersForEntry(prev => ({ ...prev, [entry_id]: data }));
-      } catch (e) {
-        alert("Failed to load reminders: " + e.message);
-        return;
-      }
-    }
-    setVisibleRemindersEntry(entry_id);
-  }
-};
 
   return (
     <div className="page user-home">
@@ -746,12 +746,14 @@ const toggleReminder = async (item) => {
                   </div>
 
                   <div className="item-buttons">
-                    <button
-                      className="button small"
-                      onClick={() => toggleSideEffects(item.entry_id)}
-                    >
+                    {category !== "donation" && (
+                      <button
+                        className="button small"
+                        onClick={() => toggleSideEffects(item.entry_id)}
+                      >
                       Side Effects
-                    </button>
+                      </button>
+                    )}
 
                     {category === "have" && (
   <>

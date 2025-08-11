@@ -1,7 +1,11 @@
+body{
+  background-color:#e2fee2;
+
+}
 .page {
   min-height: 100vh;
-  background-color: #2E7D32; /* calm green */
-  color: #EEE;
+  background-color: #e2fee2; 
+  color: #05668D;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   padding-top: 60px;
   text-align: center;
@@ -16,14 +20,14 @@
 
 /* Form container */
 .form-container {
-  background-color: #A5D6A7; /* lighter green */
+  background-color: #D1E8E2; 
   margin: 20px auto 40px;
   padding: 30px 25px;
   border-radius: 8px;
   max-width: 400px;
   box-shadow: 0 6px 12px rgba(0,0,0,0.2);
   text-align: left;
-  color: #1B5E20;
+  color: #028090;
 }
 
 /* Inputs, selects, and textarea */
@@ -33,11 +37,11 @@
   padding: 12px 10px;
   margin-bottom: 16px;
   border-radius: 6px;
-  border: 1px solid #388E3C;
+  border: 1px solid #028090;
   font-size: 16px;
   box-sizing: border-box;
   font-family: inherit;
-  color: #1B5E20;
+  color: #028090;
   resize: vertical;
 }
 
@@ -55,23 +59,23 @@
 }
 
 .button.primary {
-  background-color: #1B5E20;
-  color: #fff;
+  background-color: #028090;
+  color: #F0F3BD;
   margin-bottom: 12px;
 }
 
 .button.primary:hover {
-  background-color: #145214;
+  background-color: #00A896;
 }
 
 .button.cancel {
-  background-color: #d32f2f;
-  color: #fff;
+  background-color: #00A896;
+  color: #00A896;
   margin-bottom: 12px;
 }
 
 .button.cancel:hover {
-  background-color: #9a2323;
+  background-color: #f07873;
 }
 
 /* Buttons container with spacing */
@@ -91,7 +95,7 @@
   margin: 0 auto 20px;
   padding: 0 20px;
   position: relative;
-  border-bottom: 2px solid #145214;
+  border-bottom: 2px solid #f07873;
 }
 
 /* Container for right-side buttons */
@@ -229,24 +233,20 @@ p {
 
 /* Different border colors for categories */
 .shelf-have {
-  border-color: #388e3c;
-  background: #e6f4e6;
+  border-color: #028090;
+  background: #D1E8E2;
 }
 .shelf-currently {
-  border-color: #2e7d32;
-  background: #c8e6c9;
+  border-color: #D1E8E2;
+  background: #D1E8E2;
 }
 .shelf-past {
   border-color: #7b8d6e;
   background: #dee5d9;
 }
-.shelf-unused {
-  border-color: #8c8c8c;
-  background: #f0f0f0;
-}
 .shelf-donation {
-  border-color: #d32f2f;
-  background: #fce4e4;
+  border-color: #ffa69e;
+  background: #ffa69e;
 }
 
 /* Medication card */
@@ -286,16 +286,19 @@ p {
   border-radius: 4px;
 }
 
-.item-buttons {
-  margin-top: 5px;
+item-buttons {
   display: flex;
-  gap: 8px;
+  flex-wrap: wrap;     
+  gap: 8px;            
+  max-width: 100%;      
+  justify-content: flex-start; 
 }
 
-.button.small {
-  padding: 4px 10px;
+.item-buttons .button.small {
+  padding: 6px 12px;
   font-size: 0.85rem;
-  width: auto;
+  min-width: 80px;      
+  white-space: nowrap;  
 }
 
 .side-effects-list {
@@ -336,12 +339,12 @@ p {
 .medication-item > div {
   font-weight: 600;
   font-size: 1rem;
-  color: #2e7d32; /* calm green text */
+  color: #ffa69e; 
 }
 
 .button.delete-btn {
-  background-color: #e53935; /* softer red */
-  color: white;
+  background-color: #ffa69e; 
+  color: 05668D;
   border: none;
   padding: 8px 16px;
   border-radius: 6px;
@@ -353,7 +356,14 @@ p {
 }
 
 .button.delete-btn:hover {
-  background-color: #ab2723;
+  background-color: #f07873;
+}
+
+.button.small.delete-btn {
+  padding: 6px 10px; 
+  min-width: auto;   
+  width: auto;        
+  font-size: 0.85rem; 
 }
 
 .input.search-med-id {
@@ -370,44 +380,40 @@ p {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.reminder-popup {
-  position: absolute;
-  top: 50px;
-  right: 10px;
-  width: 25vw; /* about 1/4 of viewport width */
-  background: #f9f9f9;
-  border: 1px solid #ccc;
-  padding: 16px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+.reminder-form {
+  margin-top: 10px;
+  background: #e8f5e9;
+  padding: 12px;
+  border-radius: 6px;
+  width: 100%; /* fill med entry box width */
+  box-sizing: border-box;
+  color: #2e7d32;
+}
+
+.reminder-form label {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  z-index: 1000;
-  border-radius: 8px;
-  color: #1B5E20;
+  margin-bottom: 8px;
   font-weight: 600;
 }
 
-.reminder-popup label {
-  display: flex;
-  flex-direction: column;
-  font-size: 0.9rem;
-}
-
-.reminder-popup input[type="time"],
-.reminder-popup input[type="text"] {
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #388E3C;
+.reminder-form input[type="time"],
+.reminder-form input[type="text"] {
+  padding: 6px;
+  border-radius: 4px;
+  border: 1px solid #a5d6a7;
   font-size: 1rem;
-  margin-top: 4px;
-  color: #1B5E20;
 }
 
-.reminder-popup .form-buttons {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 8px;
+.reminders-list {
+  margin-top: 10px;
+  background: #e3f2fd;
+  border: 1px solid #64b5f6;
+  padding: 10px;
+  border-radius: 6px;
+  color: #145214;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 

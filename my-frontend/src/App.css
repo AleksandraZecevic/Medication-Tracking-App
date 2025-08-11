@@ -1,8 +1,8 @@
 /* General page styles */
 .page {
   min-height: 100vh;
-  background-color: #2E7D32; /* calm green */
-  color: #EEE;
+  background-color: #e2fee2; /* keep your chosen background */
+  color: #05668D; /* dark blue text */
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   padding-top: 60px;
   text-align: center;
@@ -13,6 +13,7 @@
   font-size: 3.5rem;
   font-weight: 700;
   margin-bottom: 4px;
+  color: #028090; /* blue-green */
 }
 
 /* Slogan */
@@ -21,18 +22,19 @@
   font-weight: 300;
   margin-top: 0;
   margin-bottom: 40px;
-  color: #C8E6C9;
+  color: #00A896; /* turquoise */
 }
 
 /* Form container */
 .form-container {
-  background-color: #A5D6A7; /* lighter green */
+  background-color: #F0F3BD; /* pale yellow */
   margin: 0 auto;
   padding: 30px;
   border-radius: 8px;
   max-width: 400px;
-  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+  box-shadow: 0 6px 12px rgba(2, 195, 154, 0.3);
   text-align: left;
+  color: #05668D; /* dark blue text */
 }
 
 /* Inputs and selects */
@@ -42,9 +44,10 @@
   padding: 12px 10px;
   margin-bottom: 16px;
   border-radius: 6px;
-  border: 1px solid #388E3C;
+  border: 1px solid #02C39A; /* light turquoise border */
   font-size: 16px;
   box-sizing: border-box;
+  color: #05668D; /* dark blue text */
 }
 
 /* Buttons */
@@ -56,27 +59,40 @@
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  font-family: inherit;
+  transition: background-color 0.3s ease;
 }
 
+/* Primary button */
 .button.primary {
-  background-color: #1B5E20;
-  color: #fff;
+  background-color: #028090; /* blue-green */
+  color: #F0F3BD; /* pale yellow */
   margin-bottom: 12px;
 }
 
+.button.primary:hover {
+  background-color: #00A896; /* turquoise */
+}
+
+/* Logout button */
 .button.logout {
-  background-color: #D32F2F;
-  color: #fff;
+  background-color: #ffa69e; /* soft coral */
+  color: #05668D; /* dark blue */
   max-width: 200px;
   margin: 40px auto 0;
   display: block;
+  transition: background-color 0.3s ease;
+}
+
+.button.logout:hover {
+  background-color: #f07873; /* darker coral on hover */
 }
 
 /* Link buttons */
 .link-button {
   background: none;
   border: none;
-  color: #1B5E20;
+  color: #028090; /* blue-green */
   cursor: pointer;
   text-decoration: underline;
   font-size: 14px;
@@ -86,7 +102,7 @@
 
 /* Error message */
 .error {
-  color: #D32F2F;
+  color: #D32F2F; /* red */
   font-weight: 600;
   margin-top: 10px;
   text-align: center;
