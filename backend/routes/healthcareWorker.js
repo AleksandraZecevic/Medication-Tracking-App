@@ -52,16 +52,7 @@ healthcareWorker.post("/", urlencodedParser, async (req, res) => {
     }
 
     // Check if licence_num already exists
-    const existing = await new Promise((resolve, reject) => {
-      DB.db.query(
-        'SELECT * FROM `HealthCare Worker` WHERE licence_num = ?',
-        [licence_num],
-        (err, results) => {
-          if (err) return reject(err);
-          resolve(results.length > 0);
-        }
-      );
-    });
+    const existing = await DB.healthcareWorkerLicenceExists(licence_num);
 
     if (existing) {
       return res.status(409).send("Licence number already exists");
@@ -127,7 +118,5 @@ healthcareWorker.delete("/:id", async (req, res) => {
     res.sendStatus(500);
   }
 });
-
-
 
 module.exports = healthcareWorker;

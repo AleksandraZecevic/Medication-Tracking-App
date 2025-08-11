@@ -46,31 +46,49 @@ sideEffect.get("/:id", async (req, res) => {
   }
 });
 
+// GET side effect by entry ID
+sideEffect.get("/entry_id/:id", async (req, res) => {
+  try {
+    const result = await DB.getSideEffectByEntryId(req.params.id);
+    if (!result) {
+      return res.status(404).send("Side effect not found");
+    }
+    res.json(result);
+  } catch (err) {
+    console.error("GET BY ID ERROR:", err.message);
+    res.status(500).send("Internal Server Error");
+  }
+});
 
 // POST new side effect
 sideEffect.post("/", urlencodedParser, async (req, res) => {
   try {
-    const { se_id, entry_id, description } = req.body;
+    const { entry_id, description } = req.body;
 
-    if (!se_id || !entry_id || !description) {
-      return res.status(400).send("Missing required fields");
+    if (!entry_id || !description) {
+      return res.status(400).send("Missing required fields: entry_id and description");
     }
 
+    // Get next se_id from DB helper
+    const maxId = await DB.getMaxSEId();
+    const nextId = (maxId || 0) + 1;
+
     const newSideEffect = await DB.createSideEffect({
-      se_id: Number(se_id),
+      se_id: nextId,
       entry_id: Number(entry_id),
-      description
+      description,
     });
 
     res.status(201).json({
       message: "Side effect created successfully",
-      data: newSideEffect
+      data: newSideEffect,
     });
   } catch (err) {
     console.error("CREATE ERROR:", err.message);
     res.status(500).send(err.message);
   }
 });
+
 
 // PUT (partial update) side effect
 sideEffect.put("/:id", urlencodedParser, async (req, res) => {
@@ -103,5 +121,7 @@ sideEffect.delete("/:id", async (req, res) => {
     res.status(500).send(err.message);
   }
 });
+
+
 
 module.exports = sideEffect;

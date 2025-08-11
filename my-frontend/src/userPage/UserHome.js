@@ -4,19 +4,12 @@ import AddMedicationForm from "./AddMedicationForm";
 import AddMedicationEntryForm from "./AddMedicationEntryForm";
 
 export default function UserHome({ user, onLogout }) {
-  // All medications loaded from backend
+ 
   const [allMeds, setAllMeds] = useState([]);
-
-  // Healthcare workers list for prescribed_by dropdown
   const [healthcareWorkers, setHealthcareWorkers] = useState([]);
-
-  // Controls which form to show: "med", "entry", or null (no form)
   const [showForm, setShowForm] = useState(null);
-
-  // Controls which main view to show: "shelf" (categorized meds) or "allMeds" (full meds list)
   const [showView, setShowView] = useState("shelf");
 
-  // New medication form data
   const [newMed, setNewMed] = useState({
     med_id: "",
     name: "",
@@ -24,7 +17,6 @@ export default function UserHome({ user, onLogout }) {
     intake_instruction: "",
   });
 
-  // New medication entry form data
   const [newEntry, setNewEntry] = useState({
     entry_id: "",
     med_id: "",
@@ -67,6 +59,13 @@ export default function UserHome({ user, onLogout }) {
     entryId: null,
   });
   const [showReminderFormFor, setShowReminderFormFor] = React.useState(null);
+
+  const [editName, setEditName] = useState(user.name || "");
+  const [editLastname, setEditLastname] = useState(user.lastname || "");
+  const [editEmail, setEditEmail] = useState(user.email || "");
+  const [editPassword, setEditPassword] = useState(""); // optional if not changing password
+  const [editRole, setEditRole] = useState(user.role || "");
+  const [editLanguage, setEditLanguage] = useState(user.language_pref || "");
 
   const fetchReminders = async (entry_id) => {
     try {
@@ -133,9 +132,35 @@ const setReminder = async (item, time, note) => {
   }
 };
 
-const handleUpdateUser = () => {
-  alert("Update user functionality coming soon!");
-  setShowSettings(false);
+const handleUpdateUser = async () => {
+  const updatedUser = {
+    name: editName,
+    lastname: editLastname,
+    email: editEmail,
+    password: editPassword || user.password, // keep old password if unchanged
+    role: editRole,
+    language_pref: editLanguage
+  };
+
+  try {
+    const res = await fetch(`http://88.200.63.148:2004/user/${user.user_id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updatedUser)
+    });
+
+    if (res.ok) {
+      const result = await res.json();
+      alert("User updated successfully!");
+      console.log("Updated user:", result);
+      setShowSettings(false);
+    } else {
+      const errMsg = await res.text();
+      alert(`Failed to update user: ${errMsg}`);
+    }
+  } catch (err) {
+    alert("Error updating user: " + err.message);
+  }
 };
 
   // Fetch all needed data on component mount and whenever user changes
@@ -148,7 +173,7 @@ const handleUpdateUser = () => {
           await Promise.all([
             fetch("http://88.200.63.148:2004/medication"),
             fetch("http://88.200.63.148:2004/healthcareWorker"),
-            fetch(`http://88.200.63.148:2004/medentry?user_id=${user.user_id}`),
+            fetch(`http://88.200.63.148:2004/medentry/user/${user.user_id}`),
             fetch(`http://88.200.63.148:2004/sideeffect?user_id=${user.user_id}`),
             fetch("http://88.200.63.148:2004/medication/nextid"),
             fetch("http://88.200.63.148:2004/medentry/nextid"),
@@ -462,10 +487,11 @@ const handleUpdateUser = () => {
     }
     if(sourceCategory === "past"){
       alert("Items in Past cannot be moved.")
+      return;
     }
     // Rules for moving from "have"
     if (sourceCategory === "have") {
-      if (targetCategory !== "currently" && targetCategory !== "donation") {
+      if (targetCategory === "past") {
         alert("Can only move 'Have' items to 'Currently Using' or 'For Donation'.");
         return;
       }
@@ -580,20 +606,61 @@ const toggleReminder = async (item) => {
       </div>
 
   
-    {/* Settings popup */}
-    {showSettings && (
-      <div className="settings-popup">
-        <button className="button" onClick={handleUpdateUser}>
-          Update User Info
-        </button>
-        <button className="button delete-btn" onClick={handleDeleteUser}>
-          Delete User Account
-        </button>
-        <button className="button cancel" onClick={() => setShowSettings(false)}>
-          Close
-        </button>
-      </div>
-    )}
+{showSettings && (
+  <div className="settings-modal">
+    <h3>Update Account</h3>
+    <input
+      type="text"
+      value={editName}
+      onChange={(e) => setEditName(e.target.value)}
+      placeholder="First Name"
+    />
+    <input
+      type="text"
+      value={editLastname}
+      onChange={(e) => setEditLastname(e.target.value)}
+      placeholder="Last Name"
+    />
+    <input
+      type="email"
+      value={editEmail}
+      onChange={(e) => setEditEmail(e.target.value)}
+      placeholder="Email"
+    />
+    <input
+      type="password"
+      value={editPassword}
+      onChange={(e) => setEditPassword(e.target.value)}
+      placeholder="New Password (optional)"
+    />
+    <input
+      type="text"
+      value={editRole}
+      onChange={(e) => setEditRole(e.target.value)}
+      placeholder="Role"
+    />
+    <input
+      type="text"
+      value={editLanguage}
+      onChange={(e) => setEditLanguage(e.target.value)}
+      placeholder="Language"
+    />
+
+    <button onClick={handleUpdateUser}>Save Changes</button>
+    <button onClick={() => setShowSettings(false)}>Cancel</button>
+
+    <hr />
+
+    <button className="button delete-btn" onClick={handleDeleteUser}>
+      Delete User Account
+    </button>
+
+     <button className="button cancel" onClick={() => setShowSettings(false)}>
+      Close
+    </button>
+        
+  </div>
+)}
 
       {/* Top menu buttons */}
       <div className="menu">

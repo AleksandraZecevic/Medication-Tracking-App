@@ -123,4 +123,36 @@ medEntry.delete("/:id", async (req, res) => {
   }
 });
 
+// Get all medication entries prescribed by a specific healthcare worker
+medEntry.get("/by-doctor/:doctorId", async (req, res) => {
+  try {
+    const doctorId = req.params.doctorId;
+    const allEntries = await DB.allMediEntry(); // get all prescriptions
+    const doctorEntries = allEntries.filter(
+      (entry) => entry.prescribed_by == doctorId
+    );
+
+    if (doctorEntries.length === 0) {
+      return res.status(404).send("No prescriptions found for this doctor");
+    }
+
+    res.json(doctorEntries);
+  } catch (err) {
+    console.error(err);
+    res.sendStatus(500);
+  }
+});
+
+// get med entris by specific user that made them
+medEntry.get("/user/:user_id", async (req, res) => {
+  try {
+    const results = await DB.getMediEntriesByUserId(req.params.user_id);
+    res.json(results);
+  } catch (err) {
+    console.error(err);
+    res.sendStatus(500);
+  }
+});
+
+
 module.exports = medEntry;

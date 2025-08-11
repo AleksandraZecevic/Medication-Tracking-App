@@ -43,6 +43,29 @@
   gap: 6px;
 }
 
+.settings-modal {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 350px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.settings-modal input {
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+.settings-modal button {
+  padding: 8px;
+  margin-top: 5px;
+  border: none;
+  cursor: pointer;
+}
+
+
 .menu {
   display: flex;
   flex-wrap: wrap;
@@ -92,4 +115,50 @@
 
 .button.logout:hover {
   background-color: #9a2323;
+}
+
+.med-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.med-entry-box {
+  background-color: #f0f8ff; /* light blueish */
+  border: 1px solid #90caf9; /* blue border */
+  border-radius: 8px;
+  padding: 16px;
+  width: 300px; /* fixed width box */
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+.med-entry-header {
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+  color: #1565c0; /* darker blue */
+}
+
+.med-entry-content p {
+  margin: 4px 0;
+}
+
+.side-effects-popup {
+  background: #e3f2fd;
+  border: 1px solid #64b5f6;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 6px;
+  color: #145214;
+}
+
+.button.small {
+  margin-top: 8px;
+  margin-right: 8px;
+  cursor: pointer;
 }

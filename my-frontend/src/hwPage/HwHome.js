@@ -74,7 +74,7 @@ export default function HwHome({ hw, onLogout }) {
     setLoadingPrescriptions(true);
     // Use licence_num or license_num as prescribed_by
     const prescribedBy = hcwProfile?.licence_num || hcwProfile?.license_num || "";
-    fetch(`${API_URL}/medentries?prescribed_by=${encodeURIComponent(prescribedBy)}`)
+    fetch(`${API_URL}/medentry/by-doctor/${hw.user_id}`)
       .then(async (res) => {
         if (!res.ok) {
           const text = await res.text();
@@ -106,16 +106,21 @@ export default function HwHome({ hw, onLogout }) {
   }, [filterUserId, prescriptions]);
 
   // Fetch side effects for a given medication entry
-  function fetchSideEffects(entry_id) {
-    fetch(`${API_URL}/sideeffects?entry_ids=${entry_id}`)
-      .then((res) => res.json())
-      .then((effects) => {
-        setSideEffectsMap((prev) => ({ ...prev, [entry_id]: effects }));
-      })
-      .catch(() => {
-        setSideEffectsMap((prev) => ({ ...prev, [entry_id]: [] }));
-      });
-  }
+function fetchSideEffects(entry_id) {
+  fetch(`${API_URL}/sideeffect/entry_id/${entry_id}`)
+    .then((res) => res.json())
+    .then((effects) => {
+      setSideEffectsMap((prev) => ({
+        ...prev,
+        [entry_id]: Array.isArray(effects) ? effects : [], // force array
+      }));
+    })
+    .catch(() => {
+      setSideEffectsMap((prev) => ({ ...prev, [entry_id]: [] }));
+    });
+}
+
+
 
   // Toggle side effects popup for an entry
   function toggleSideEffects(entry_id) {
@@ -134,23 +139,26 @@ export default function HwHome({ hw, onLogout }) {
   }
 
   // Add side effect to an entry
-  function handleAddSideEffect(entry_id) {
-    const desc = sideEffectInput.trim();
-    if (!desc) return alert("Please enter a side effect description");
+function handleAddSideEffect(entry_id) {
+  const desc = sideEffectInput.trim();
+  if (!desc) return alert("Please enter a side effect description");
 
-    fetch(`${API_URL}/sideeffects`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ entry_id, description: desc }),
+  fetch(`${API_URL}/sideeffect`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      entry_id,       // required: the medication entry id
+      description: desc, // required: the side effect text
+    }),
+  })
+    .then((res) => {
+      if (!res.ok) throw new Error("Failed to add side effect");
+      // Refresh side effects list after adding
+      fetchSideEffects(entry_id);
+      setSideEffectInput("");
     })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to add side effect");
-        // Refresh side effects list after adding
-        fetchSideEffects(entry_id);
-        setSideEffectInput("");
-      })
-      .catch((err) => alert(err.message));
-  }
+    .catch((err) => alert(err.message));
+}
 
   // Handle profile form input changes
   function handleProfileChange(e) {
@@ -331,48 +339,55 @@ export default function HwHome({ hw, onLogout }) {
               ) : (
                 <ul className="med-list">
                   {filteredPrescriptions.map((entry) => (
-                    <li key={entry.entry_id} className="med-entry">
-                      <p><strong>Entry ID:</strong> {entry.entry_id}</p>
-                      <p><strong>User ID:</strong> {entry.user_id}</p>
-                      <p><strong>Medication ID:</strong> {entry.med_id}</p>
-                      <p><strong>Prescribed By:</strong> {entry.prescribed_by}</p>
-                      <p><strong>Purchase Date:</strong> {new Date(entry.purchase_date).toLocaleDateString()}</p>
-                      <p><strong>Expiration Date:</strong> {new Date(entry.expiration_date).toLocaleDateString()}</p>
+                    <li key={entry.entry_id} className="med-entry-box">
+                      <div className="med-entry-header">
+                        <strong>Entry ID:</strong> {entry.entry_id}
+                      </div>
+                      <div className="med-entry-content">
+                        <p><strong>User ID:</strong> {entry.user_id}</p>
+                        <p><strong>Medication ID:</strong> {entry.med_id}</p>
+                        <p><strong>Prescribed By:</strong> {entry.prescribed_by}</p>
+                        <p><strong>Purchase Date:</strong> {new Date(entry.purchase_date).toLocaleDateString()}</p>
+                        <p><strong>Expiration Date:</strong> {new Date(entry.expiration_date).toLocaleDateString()}</p>
 
-                      <button
-                        className="button small"
-                        onClick={() => toggleSideEffects(entry.entry_id)}
-                      >
-                        Side Effects ({sideEffectsMap[entry.entry_id]?.length || 0})
-                      </button>
+                        <button
+                          className="button small"
+                          onClick={() => toggleSideEffects(entry.entry_id)}
+                        >
+                          Side Effects ({sideEffectsMap[entry.entry_id]?.length || 0})
+                        </button>
 
-                      {selectedEntryId === entry.entry_id && (
-                        <div className="side-effects-popup">
-                          <ul>
-                            {(sideEffectsMap[entry.entry_id] || []).map((se) => (
-                              <li key={se.se_id}>{se.description}</li>
-                            ))}
-                          </ul>
-                          <input
-                            type="text"
-                            placeholder="Add side effect"
-                            value={sideEffectInput}
-                            onChange={handleSideEffectInputChange}
-                          />
-                          <button
-                            className="button small"
-                            onClick={() => handleAddSideEffect(entry.entry_id)}
-                          >
-                            Add
-                          </button>
-                          <button
-                            className="button small cancel"
-                            onClick={() => setSelectedEntryId(null)}
-                          >
-                            Close
-                          </button>
-                        </div>
-                      )}
+                        {selectedEntryId === entry.entry_id && (
+                          <div className="side-effects-popup">
+                            <ul>
+                              {(Array.isArray(sideEffectsMap[entry.entry_id]) 
+                                ? sideEffectsMap[entry.entry_id] 
+                                : []
+                               ).map(effect => (
+                                        <div key={effect.se_id}>{effect.description}</div>
+                              ))}
+                            </ul>
+                            <input
+                              type="text"
+                              placeholder="Add side effect"
+                              value={sideEffectInput}
+                              onChange={handleSideEffectInputChange}
+                            />
+                            <button
+                              className="button small"
+                              onClick={() => handleAddSideEffect(entry.entry_id)}
+                            >
+                              Add
+                            </button>
+                            <button
+                              className="button small cancel"
+                              onClick={() => setSelectedEntryId(null)}
+                            >
+                              Close
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </li>
                   ))}
                 </ul>

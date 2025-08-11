@@ -439,6 +439,21 @@ dataPool.deleteHealthcareWorker = (user_id) => {
   });
 };
 
+dataPool.healthcareWorkerLicenceExists = (licence_num, excludeUserId = null) => {
+  return new Promise((resolve, reject) => {
+    const query = excludeUserId
+      ? 'SELECT * FROM `HealthCare Worker` WHERE licence_num = ? AND user_id != ?'
+      : 'SELECT * FROM `HealthCare Worker` WHERE licence_num = ?';
+
+    const params = excludeUserId ? [licence_num, excludeUserId] : [licence_num];
+
+    db.query(query, params, (err, results) => {
+      if (err) return reject(err);
+      resolve(results.length > 0);
+    });
+  });
+};
+
 // MEDICATION ENTRY ------------------------------------------------------------------------------------------------------
 // MEDICATION ENTRY ------------------------------------------------------------------------------------------------------
 
@@ -574,6 +589,20 @@ dataPool.getMaxEntryId = () => {
     });
   });
 };
+
+dataPool.getMediEntriesByUserId = (user_id) => {
+  return new Promise((resolve, reject) => {
+    db.query(
+      'SELECT * FROM `Medication Entry` WHERE user_id = ?',
+      [user_id],
+      (err, res) => {
+        if (err) return reject(err);
+        resolve(res);
+      }
+    );
+  });
+};
+
 
 // REMINDER -------------------------------------------------------------------------------------------------------------
 // REMINDER -------------------------------------------------------------------------------------------------------------
@@ -761,6 +790,16 @@ dataPool.getSideEffectById = (id) => {
     });
   });
 };
+
+dataPool.getSideEffectByEntryId = (entry_id) => {
+  return new Promise((resolve, reject) => {
+    db.query('SELECT * FROM `Side Effect` WHERE entry_id = ?', [entry_id], (err, res) => {
+      if (err) return reject(err);
+      resolve(res);
+    });
+  });
+};
+
 
 dataPool.allSideEffects = () => {
   return new Promise((resolve, reject) => {
