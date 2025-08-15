@@ -111,8 +111,8 @@ useEffect(() => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           user_id: cg.user_id,
-          certification: profileForm.licence_num,
-          care_center_name: profileForm.specialization,
+          certification: profileForm.certification,
+          care_center_name: profileForm.care_center_name,
         }),
       });
       if (res.ok) {
@@ -153,6 +153,16 @@ useEffect(() => {
   };
 
   const handleUpdateUser = async () => {
+     if (!editEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editEmail)) {
+    alert("Please enter a valid email address.");
+    return;
+  }
+
+  if (editPassword && editPassword.length < 6) {
+    alert("Password must be at least 6 characters long.");
+    return;
+  }
+  
     const updatedUser = {
       name: editName,
       lastname: editLastname,

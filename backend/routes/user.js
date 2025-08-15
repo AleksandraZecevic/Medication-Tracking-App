@@ -41,10 +41,32 @@ user.get('/:id', async (req, res) => {
   }
 });
 
+function validateUserData(data, isUpdate = false) {
+  const { email, password } = data;
+
+  // Email validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (email && !emailRegex.test(email)) {
+    return "Invalid email format";
+  }
+
+  // Password length validation (only if provided in update or required in create)
+  if (!isUpdate || password) {
+    if (!password || password.length < 6) {
+      return "Password must be at least 6 characters long";
+    }
+  }
+
+  return null;
+}
+
 
 // create user
 user.post('/', urlencodedParser ,async (req, res) => {
   try {
+     const errorMsg = validateUserData(req.body, false);
+    if (errorMsg) return res.status(400).json({ error: errorMsg });
+
     const newUser = await DB.createUser(req.body);
     res.status(201).json(newUser);
   } catch (err) {
@@ -55,6 +77,9 @@ user.post('/', urlencodedParser ,async (req, res) => {
 // update user by id
 user.put('/:id', async (req, res) => {
   try {
+     const errorMsg = validateUserData(req.body, true);
+    if (errorMsg) return res.status(400).json({ error: errorMsg });
+    
     const updated = await DB.updateUser(req.params.id, req.body);
     res.json(updated);
   } catch (err) {

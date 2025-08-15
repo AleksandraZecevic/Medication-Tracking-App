@@ -87,6 +87,17 @@ export default function Login({ onLogin }) {
       return;
     }
 
+    if (password.length < 6) {
+  setErrorMsg("Password must be at least 6 characters long");
+  return;
+}
+
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+if (!emailRegex.test(email)) {
+  setErrorMsg("Invalid email format");
+  return;
+}
+
     try {
       const res = await fetch(`${API_URL}/user`, {
         method: "POST",

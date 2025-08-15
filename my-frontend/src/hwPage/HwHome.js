@@ -55,7 +55,7 @@ const handleUpdate = async (e) => {
 
   try {
     const res = await fetch(`${API_URL}/healthcareWorker/${hw.user_id}`, {
-      method: 'PUT', // keep PUT since backend expects it
+      method: 'PUT', 
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates),
     });
@@ -162,7 +162,7 @@ function fetchSideEffects(entry_id) {
     .then((effects) => {
       setSideEffectsMap((prev) => ({
         ...prev,
-        [entry_id]: Array.isArray(effects) ? effects : [], // force array
+        [entry_id]: Array.isArray(effects) ? effects : [], 
       }));
     })
     .catch(() => {
@@ -279,6 +279,15 @@ function handleAddSideEffect(entry_id) {
 };
 
   const handleUpdateUser = async () => {
+     if (!editEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editEmail)) {
+    alert("Please enter a valid email address.");
+    return;
+  }
+
+  if (editPassword && editPassword.length < 6) {
+    alert("Password must be at least 6 characters long.");
+    return;
+  }
   const updatedUser = {
     name: editName,
     lastname: editLastname,

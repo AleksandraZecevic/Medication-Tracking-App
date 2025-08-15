@@ -1,4 +1,3 @@
-// components/UserHome/AddMedicationEntryForm.js
 import React from "react";
 
 export default function AddMedicationEntryForm({

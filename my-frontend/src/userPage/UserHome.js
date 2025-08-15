@@ -137,6 +137,15 @@ export default function UserHome({ user, onLogout }) {
 };
 
 const handleUpdateUser = async () => {
+   if (!editEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editEmail)) {
+    alert("Please enter a valid email address.");
+    return;
+  }
+
+  if (editPassword && editPassword.length < 6) {
+    alert("Password must be at least 6 characters long.");
+    return;
+  }
   const updatedUser = {
     name: editName,
     lastname: editLastname,
@@ -348,7 +357,7 @@ const handleUpdateUser = async () => {
 
   const deleteRemindersForEntry = async (entryId) => {
   try {
-    // Assuming your backend has an endpoint to delete reminders by entry_id
+   
     const res = await fetch(`http://88.200.63.148:2004/reminder/entry/${entryId}`, {
       method: "DELETE",
     });
@@ -496,10 +505,10 @@ const handleUpdateUser = async () => {
     // Rules for moving from "have"
     if (sourceCategory === "have") {
       if (targetCategory !== "currently") {
-        const entryId = item.entryId || item.entry_id;  // adjust according to your data
+        const entryId = item.entryId || item.entry_id;  
 
         if (entryId) {
-        // Remove reminder from local state
+      
           setReminder((prev) => {
           const copy = { ...prev };
           delete copy[entryId];
@@ -711,176 +720,189 @@ const handleUpdateUser = async () => {
             />
           )}
 
-      {/* Shelf view: categorized medication entries */}
-      {showForm === null && showView === "shelf" && (
-        <div className="shelf-container">
-          {["currently", "have", "past", "donation"].map((category) => (
+   {/* Shelf view: categorized medication entries */}
+{showForm === null && showView === "shelf" && (
+  <div className="shelf-container">
+    {["currently", "have", "past", "donation"].map((category) => (
+      <div
+        key={category}
+        className={`shelf-category shelf-${category}`}
+        onDrop={(e) => onDrop(e, category)}
+        onDragOver={allowDrop}
+      >
+        <h3>{category.charAt(0).toUpperCase() + category.slice(1)}</h3>
+        {shelf[category].length === 0 && <p>No medications here.</p>}
+        
+        {shelf[category].map((item) => (
+          <div key={item.entry_id} className="shelf-item">
+            
+            {/* Drag handle */}
             <div
-              key={category}
-              className={`shelf-category shelf-${category}`}
-              onDrop={(e) => onDrop(e, category)}
-              onDragOver={allowDrop}
+              className="drag-handle"
+              draggable={category !== "donation"}
+              onDragStart={(e) => onDragStart(e, item, category)}
             >
-              <h3>{category.charAt(0).toUpperCase() + category.slice(1)}</h3>
-              {shelf[category].length === 0 && <p>No medications here.</p>}
-              {shelf[category].map((item) => (
-                <div key={item.entry_id} className="shelf-item">
-                  <div
-                    className="drag-handle"
-                    draggable={category !== "donation"}
-                    onDragStart={(e) => onDragStart(e, item, category)}
+              <div>
+                <strong>{item.med_name}</strong> ({item.med_type})
+              </div>
+              <div>
+                Purchased: {prettyDate(item.purchase_date)} | Expires: {prettyDate(item.expiration_date)}
+              </div>
+              <div>
+                Prescribed by:{" "}
+                {(() => {
+                  const hw = healthcareWorkers.find(
+                    (hw) => hw.user_id.toString() === item.prescribed_by.toString()
+                  );
+                  return hw ? `${hw.licence_num} (${hw.specialization})` : "N/A";
+                })()}
+              </div>
+            </div>
+
+            {/* Item buttons */}
+            <div className="item-buttons">
+              {category !== "donation" && (
+                <button
+                  className="button small"
+                  onClick={() => toggleSideEffects(item.entry_id)}
+                >
+                  Side Effects
+                </button>
+              )}
+
+              {/* Set Reminder only for 'have' */}
+              {category === "have" && (
+                <>
+                  <button
+                    className="button small reminder-btn"
+                    onClick={() => {
+                      setShowReminderFormFor(item.entry_id);
+                      setReminderInputs({ time: "", note: "", entryId: item.entry_id });
+                    }}
                   >
-                    <div>
-                      <strong>{item.med_name}</strong> ({item.med_type})
-                    </div>
-                    <div>
-                      Purchased: {prettyDate(item.purchase_date)} | Expires: {prettyDate(item.expiration_date)}
-                    </div>
-                    <div>
-                      Prescribed by:{" "}
-                        {(() => {
-                          const hw = healthcareWorkers.find(hw => hw.user_id.toString() === item.prescribed_by.toString());
-                          return hw ? `${hw.licence_num} (${hw.specialization})` : "N/A";
-                        })()}
-                    </div>
-                  </div>
+                    Set Reminder
+                  </button>
 
-                  <div className="item-buttons">
-                    {category !== "donation" && (
-                      <button
-                        className="button small"
-                        onClick={() => toggleSideEffects(item.entry_id)}
-                      >
-                      Side Effects
-                      </button>
-                    )}
-
-                    {category === "have" && (
-  <>
-    <button
-      className="button small reminder-btn"
-      onClick={() => {
-        setShowReminderFormFor(item.entry_id);
-        setReminderInputs({ time: "", note: "", entryId: item.entry_id });
-      }}
-    >
-      Set Reminder
-    </button>
-
-    {showReminderFormFor === item.entry_id && (
-      <div className="reminder-form" style={{ marginTop: "10px" }}>
-        <label>
-          Time:
-          <input
-            type="time"
-            value={reminderInputs.time}
-            onChange={(e) =>
-              setReminderInputs((prev) => ({ ...prev, time: e.target.value }))
-            }
-            className="input"
-          />
-        </label>
-        <label>
-          Note:
-          <input
-            type="text"
-            value={reminderInputs.note}
-            onChange={(e) =>
-              setReminderInputs((prev) => ({ ...prev, note: e.target.value }))
-            }
-            placeholder="Optional note"
-            className="input"
-          />
-        </label>
-        <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
-          <button
-            className="button primary"
-            onClick={() => {
-              setReminder(item, reminderInputs.time, reminderInputs.note);
-              setShowReminderFormFor(null);
-            }}
-            disabled={!reminderInputs.time}
-          >
-            Save Reminder
-          </button>
-          <button
-            className="button cancel"
-            onClick={() => setShowReminderFormFor(null)}
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    )}
-  </>
-)}
-                    <button
-                      className="button small delete-btn"
-                      onClick={() => deleteMedEntry(item.entry_id)}
-                      title="Delete Medication Entry"
-                    >
-                      Delete Entry
-                    </button>
-                  </div>
-
-                  {sideEffectsVisibleFor === item.entry_id && (
-                    <div className="side-effects-list">
-                      {(sideEffectsMap[item.entry_id] || []).length > 0 ? (
-                        <ul>
-                          {sideEffectsMap[item.entry_id].map((se) => (
-                            <li key={se.se_id || se.description}>{se.description}</li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p>No side effects recorded yet.</p>
-                      )}
-
-                   {visibleRemindersEntry === item.entry_id && (
-                  <div className="reminders-list">
-                    <h4>Reminders:</h4>
-                      {(remindersForEntry[item.entry_id] || []).length > 0 ? (
-                      <ul>
-                        {remindersForEntry[item.entry_id].map((rem) => (
-                          <li key={rem.rem_id}>
-                          Time: {rem.time} {rem.note && `- Note: ${rem.note}`}
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                  <p>No reminders set.</p>
-                      )}
-                    </div>
-                  )}
-
-                      <textarea
-                        className="input"
-                        rows={2}
-                        placeholder="Add new side effect description"
-                        value={newSideEffectText}
-                        onChange={(e) => setNewSideEffectText(e.target.value)}
-                      />
-                      <div className="form-buttons">
+                  {showReminderFormFor === item.entry_id && (
+                    <div className="reminder-form" style={{ marginTop: "10px" }}>
+                      <label>
+                        Time:
+                        <input
+                          type="time"
+                          value={reminderInputs.time}
+                          onChange={(e) =>
+                            setReminderInputs((prev) => ({ ...prev, time: e.target.value }))
+                          }
+                          className="input"
+                        />
+                      </label>
+                      <label>
+                        Note:
+                        <input
+                          type="text"
+                          value={reminderInputs.note}
+                          onChange={(e) =>
+                            setReminderInputs((prev) => ({ ...prev, note: e.target.value }))
+                          }
+                          placeholder="Optional note"
+                          className="input"
+                        />
+                      </label>
+                      <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
                         <button
                           className="button primary"
-                          onClick={() => handleAddSideEffect(item.entry_id)}
+                          onClick={() => {
+                            setReminder(item, reminderInputs.time, reminderInputs.note);
+                            setShowReminderFormFor(null);
+                          }}
+                          disabled={!reminderInputs.time}
                         >
-                          Add Side Effect
+                          Save Reminder
                         </button>
                         <button
                           className="button cancel"
-                          onClick={() => setSideEffectsVisibleFor(null)}
+                          onClick={() => setShowReminderFormFor(null)}
                         >
-                          Close
+                          Cancel
                         </button>
                       </div>
                     </div>
                   )}
-                </div>
-              ))}
+                </>
+              )}
+
+              {/* Delete button */}
+              <button
+                className="button small delete-btn"
+                onClick={() => deleteMedEntry(item.entry_id)}
+                title="Delete Medication Entry"
+              >
+                Delete Entry
+              </button>
             </div>
-          ))}
-        </div>
-      )}
+
+            {/* Side Effects Section */}
+            {sideEffectsVisibleFor === item.entry_id && (
+              <div className="side-effects-list">
+                {(sideEffectsMap[item.entry_id] || []).length > 0 ? (
+                  <ul>
+                    {sideEffectsMap[item.entry_id].map((se) => (
+                      <li key={se.se_id || se.description}>{se.description}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>No side effects recorded yet.</p>
+                )}
+
+                {/* Reminders Section */}
+                {visibleRemindersEntry === item.entry_id && (
+                  <div className="reminders-list">
+                    <h4>Reminders:</h4>
+                    {(remindersForEntry[item.entry_id] || []).length > 0 ? (
+                      <ul>
+                        {remindersForEntry[item.entry_id].map((rem) => (
+                          <li key={rem.rem_id}>
+                            Time: {rem.time} {rem.note && `- Note: ${rem.note}`}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p>No reminders set.</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Add Side Effect Form */}
+                <textarea
+                  className="input"
+                  rows={2}
+                  placeholder="Add new side effect description"
+                  value={newSideEffectText}
+                  onChange={(e) => setNewSideEffectText(e.target.value)}
+                />
+                <div className="form-buttons">
+                  <button
+                    className="button primary"
+                    onClick={() => handleAddSideEffect(item.entry_id)}
+                  >
+                    Add Side Effect
+                  </button>
+                  <button
+                    className="button cancel"
+                    onClick={() => setSideEffectsVisibleFor(null)}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    ))}
+  </div>
+)}
+
 
       {/* All Medications view */}
       {showForm === null && showView === "allMeds" && (

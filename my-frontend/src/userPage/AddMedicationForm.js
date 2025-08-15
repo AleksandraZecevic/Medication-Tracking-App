@@ -1,4 +1,3 @@
-// components/UserHome/AddMedicationForm.js
 import React from "react";
 
 export default function AddMedicationForm({ newMed, setNewMed, handleAddMed, onCancel }) {

@@ -145,6 +145,15 @@ export default function DcHome({ dc, onLogout }) {
 
   // User account update handlers (same as CgHome)
   const handleUpdateUser = async () => {
+     if (!editEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editEmail)) {
+    alert("Please enter a valid email address.");
+    return;
+  }
+
+  if (editPassword && editPassword.length < 6) {
+    alert("Password must be at least 6 characters long.");
+    return;
+  }
     const updatedUser = {
       name: editName,
       lastname: editLastname,
